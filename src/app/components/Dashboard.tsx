@@ -34,13 +34,23 @@ export default function Dashboard({ user, onLogout }) {
 
   const totalBalance = userAccounts.reduce((sum, acc) => sum + acc.balance, 0);
 
-  const balanceData = recentTransactions
-    .slice(0, 6)
-    .reverse()
-    .map((txn) => ({
-      date: new Date(txn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      balance: txn.balance,
-    }));
+  const balanceData = (() => {
+    const grouped = [];
+    const seenDates = new Set();
+    for (const txn of recentTransactions) {
+      const display = new Date(txn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      if (!seenDates.has(display)) {
+        seenDates.add(display);
+        grouped.push({
+          id: txn.id,
+          date: txn.date,
+          displayDate: display,
+          balance: txn.balance,
+        });
+      }
+    }
+    return grouped.slice(0, 6).reverse();
+  })();
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
@@ -71,16 +81,16 @@ export default function Dashboard({ user, onLogout }) {
         {/* Total Net Worth Card */}
         <Card className="bg-gradient-to-br from-[#121217] to-[#0a0a0c] border-[#27272a] shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#cca858] opacity-5 rounded-full blur-[80px]"></div>
-          <CardContent className="p-8 md:p-12 relative z-10">
-            <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
+          <CardContent className="p-6 sm:p-8 md:p-12 relative z-10">
+            <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <p className="text-gray-400 font-medium uppercase tracking-widest text-sm">Total Portfolio Value</p>
-                  <button onClick={() => setBalanceVisible(!balanceVisible)} className="text-gray-500 hover:text-[#cca858] transition-colors">
-                    {balanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <p className="text-gray-400 font-medium uppercase tracking-widest text-xs sm:text-sm">Total Portfolio Value</p>
+                  <button onClick={() => setBalanceVisible(!balanceVisible)} className="text-gray-500 hover:text-[#cca858] transition-colors p-2 -ml-2">
+                    {balanceVisible ? <EyeOff className="h-5 w-5 sm:h-4 sm:w-4" /> : <Eye className="h-5 w-5 sm:h-4 sm:w-4" />}
                   </button>
                 </div>
-                <h2 className="text-5xl md:text-6xl font-light text-white tracking-tight">
+                <h2 className="text-4xl sm:text-5xl md:text-6xl font-light text-white tracking-tight break-all">
                   {balanceVisible ? formatCurrency(totalBalance || 12500450.00) : '••••••••'}
                 </h2>
                 <div className="flex items-center gap-2 text-sm mt-4">
@@ -92,11 +102,11 @@ export default function Dashboard({ user, onLogout }) {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button className="bg-[#cca858] hover:bg-[#b5954a] text-[#121217] h-12 px-6 text-sm font-semibold rounded-lg shadow-lg shadow-[#cca858]/20">
-                  <ArrowUpRight className="h-4 w-4 mr-2" /> Make a Transfer
+              <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto mt-4 lg:mt-0">
+                <Button className="w-full sm:w-auto bg-[#cca858] hover:bg-[#b5954a] text-[#121217] h-14 sm:h-12 px-6 text-base sm:text-sm font-semibold rounded-xl sm:rounded-lg shadow-lg shadow-[#cca858]/20">
+                  <ArrowUpRight className="h-5 w-5 sm:h-4 sm:w-4 mr-2" /> Make a Transfer
                 </Button>
-                <Button variant="outline" className="h-12 px-6 border-[#27272a] text-white hover:bg-[#1a1a20] hover:text-[#cca858]">
+                <Button variant="outline" className="w-full sm:w-auto h-14 sm:h-12 px-6 rounded-xl sm:rounded-lg border-[#27272a] bg-transparent text-white hover:bg-[#1a1a20] hover:text-[#cca858] text-base sm:text-sm">
                   View Portfolio
                 </Button>
               </div>
@@ -115,9 +125,15 @@ export default function Dashboard({ user, onLogout }) {
             <CardContent>
               <div className="h-[300px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={balanceData.length ? balanceData : [{date:'Jan', balance: 12000000}, {date:'Feb', balance: 12200000}, {date:'Mar', balance: 12500450}]}>
+                  <LineChart data={balanceData.length ? balanceData : [{displayDate:'Jan 1', balance: 12000000}, {displayDate:'Feb 1', balance: 12200000}, {displayDate:'Mar 1', balance: 12500450}]}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#71717a', fontSize: 12}} dy={10} />
+                    <XAxis 
+                      dataKey="displayDate" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{fill: '#71717a', fontSize: 12}} 
+                      dy={10}
+                    />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
@@ -193,19 +209,19 @@ export default function Dashboard({ user, onLogout }) {
                 {id: 2, name: 'Global Investment', number: '•••• 9931', balance: 8400000.00},
                 {id: 3, name: 'Offshore Trust', number: '•••• 1120', balance: 2850449.50}
               ]).map((account) => (
-                <div key={account.id} className="flex items-center justify-between p-4 rounded-xl bg-[#0a0a0c] border border-[#27272a] hover:border-[#cca858]/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-[#1a1a20] flex items-center justify-center">
-                      <ShieldCheck className="h-5 w-5 text-[#cca858]" />
+                <div key={account.id} className="flex items-center justify-between p-4 sm:p-5 rounded-xl bg-[#0a0a0c] border border-[#27272a] hover:border-[#cca858]/50 transition-colors cursor-pointer active:bg-[#1a1a20]">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full bg-[#1a1a20] flex items-center justify-center">
+                      <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-[#cca858]" />
                     </div>
-                    <div>
-                      <h4 className="text-white font-medium">{account.name}</h4>
-                      <p className="text-xs text-gray-500">{account.number}</p>
+                    <div className="min-w-0">
+                      <h4 className="text-white font-medium text-sm sm:text-base truncate">{account.name}</h4>
+                      <p className="text-xs sm:text-sm text-gray-500">{account.number}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-white font-medium">{balanceVisible ? formatCurrency(account.balance) : '••••••••'}</p>
-                    <p className="text-xs text-emerald-400">Available</p>
+                  <div className="text-right shrink-0 ml-4">
+                    <p className="text-white font-medium text-sm sm:text-base">{balanceVisible ? formatCurrency(account.balance) : '••••••••'}</p>
+                    <p className="text-xs sm:text-sm text-emerald-400">Available</p>
                   </div>
                 </div>
               ))}
@@ -227,18 +243,18 @@ export default function Dashboard({ user, onLogout }) {
                 {id: 3, description: 'Private Jet Charter Services', amount: -28500, date: '2026-04-28T16:45:00'},
                 {id: 4, description: 'Patek Philippe SA', amount: -185000, date: '2026-04-25T11:20:00'}
               ]).map((txn) => (
-                <div key={txn.id} className="flex items-center justify-between p-3 border-b border-[#27272a] last:border-0">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${txn.amount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                      {txn.amount > 0 ? <ArrowDownRight className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+                <div key={txn.id} className="flex items-center justify-between py-4 border-b border-[#27272a] last:border-0 hover:bg-[#1a1a20]/50 px-2 -mx-2 rounded-lg transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className={`h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full flex items-center justify-center ${txn.amount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                      {txn.amount > 0 ? <ArrowDownRight className="h-5 w-5 sm:h-6 sm:w-6" /> : <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" />}
                     </div>
-                    <div>
-                      <p className="text-white font-medium text-sm truncate max-w-[180px] sm:max-w-[250px]">{txn.description}</p>
-                      <p className="text-xs text-gray-500">{new Date(txn.date).toLocaleDateString()}</p>
+                    <div className="min-w-0">
+                      <p className="text-white font-medium text-sm sm:text-base truncate max-w-[150px] sm:max-w-[250px]">{txn.description}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">{new Date(txn.date).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`font-medium ${txn.amount > 0 ? 'text-emerald-400' : 'text-white'}`}>
+                  <div className="text-right shrink-0">
+                    <p className={`font-medium text-sm sm:text-base ${txn.amount > 0 ? 'text-emerald-400' : 'text-white'}`}>
                       {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
                     </p>
                   </div>

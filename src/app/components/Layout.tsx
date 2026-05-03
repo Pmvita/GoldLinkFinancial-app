@@ -96,22 +96,17 @@ export default function Layout({ children, user, onLogout }) {
             </div>
             <span className="text-lg font-light tracking-wider">GoldLink</span>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-gray-400 hover:text-white"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+          <div className="h-8 w-8 rounded-full border border-[#cca858] overflow-hidden cursor-pointer" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
+          </div>
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Overlay (For items not in bottom nav) */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-30 bg-[#0a0a0c] pt-16">
-          <div className="p-4 border-b border-[#27272a]">
-            <div className="flex items-center gap-3 mb-2">
+        <div className="md:hidden fixed inset-0 z-50 bg-[#0a0a0c]/95 backdrop-blur-sm pt-16 flex flex-col">
+          <div className="p-4 border-b border-[#27272a] flex justify-between items-center bg-[#121217]">
+            <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-full border-2 border-[#cca858] overflow-hidden">
                 <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
               </div>
@@ -120,8 +115,11 @@ export default function Layout({ children, user, onLogout }) {
                 <p className="text-sm text-[#cca858] uppercase tracking-widest">{user?.tier || 'Private Wealth'}</p>
               </div>
             </div>
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
+              <X className="h-6 w-6 text-gray-400" />
+            </Button>
           </div>
-          <nav className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-140px)]">
+          <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               const Icon = item.icon;
@@ -141,29 +139,63 @@ export default function Layout({ children, user, onLogout }) {
                 </Link>
               );
             })}
-            <div className="pt-4 mt-4 border-t border-[#27272a]">
-              <Button
-                variant="ghost"
-                className="w-full justify-start px-4 py-6 text-base text-gray-400 hover:text-white hover:bg-[#1a1a20]"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onLogout();
-                }}
-              >
-                <LogOut className="h-6 w-6 mr-3 text-gray-500" />
-                Secure Logout
-              </Button>
-            </div>
           </nav>
+          <div className="p-6 border-t border-[#27272a] bg-[#121217]">
+            <Button
+              variant="ghost"
+              className="w-full justify-start py-6 text-base text-gray-400 hover:text-white hover:bg-[#1a1a20]"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onLogout();
+              }}
+            >
+              <LogOut className="h-6 w-6 mr-3 text-red-500" />
+              <span className="text-red-500">Secure Logout</span>
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-[#0a0a0c]">
+      <main className="flex-1 overflow-y-auto bg-[#0a0a0c] pb-24 md:pb-0">
         <div className="max-w-6xl mx-auto p-4 md:p-8">
           {children}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#121217]/90 backdrop-blur-md border-t border-[#27272a] z-40 pb-safe">
+        <div className="flex justify-around items-center px-2 py-2">
+          {[
+            { name: 'Home', href: '/dashboard', icon: Home },
+            { name: 'Accounts', href: '/accounts', icon: Wallet },
+            { name: 'Transfers', href: '/transfers', icon: Send },
+            { name: 'Cards', href: '/cards', icon: CreditCard },
+          ].map((item) => {
+            const isActive = location.pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`flex flex-col items-center justify-center w-16 p-2 rounded-lg transition-colors ${
+                  isActive ? 'text-[#cca858]' : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                <Icon className="h-5 w-5 mb-1" />
+                <span className="text-[10px] font-medium">{item.name}</span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="flex flex-col items-center justify-center w-16 p-2 rounded-lg transition-colors text-gray-500 hover:text-gray-300"
+          >
+            <Menu className="h-5 w-5 mb-1" />
+            <span className="text-[10px] font-medium">Menu</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

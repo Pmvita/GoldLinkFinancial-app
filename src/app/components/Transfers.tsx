@@ -44,28 +44,28 @@ export default function Transfers({ user, onLogout }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <Card className="bg-[#121217] border-[#27272a]">
-              <CardHeader className="border-b border-[#27272a] bg-[#0a0a0c]/50">
-                <div className="flex flex-wrap gap-2">
+              <CardHeader className="border-b border-[#27272a] bg-[#0a0a0c]/50 p-4 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <Button 
                     variant={transferType === 'internal' ? 'default' : 'outline'} 
                     onClick={() => setTransferType('internal')}
-                    className={transferType === 'internal' ? 'bg-[#cca858] text-[#121217] hover:bg-[#b5954a]' : 'border-[#27272a] text-gray-400 hover:text-white hover:bg-[#1a1a20]'}
+                    className={transferType === 'internal' ? 'bg-[#cca858] text-[#121217] hover:bg-[#b5954a] h-12 sm:h-10' : 'border-[#27272a] text-gray-400 hover:text-white hover:bg-[#1a1a20] h-12 sm:h-10'}
                   >
-                    <ArrowRightLeft className="h-4 w-4 mr-2" /> Internal Transfer
+                    <ArrowRightLeft className="h-4 w-4 mr-2" /> Internal
                   </Button>
                   <Button 
                     variant={transferType === 'domestic' ? 'default' : 'outline'} 
                     onClick={() => setTransferType('domestic')}
-                    className={transferType === 'domestic' ? 'bg-[#cca858] text-[#121217] hover:bg-[#b5954a]' : 'border-[#27272a] text-gray-400 hover:text-white hover:bg-[#1a1a20]'}
+                    className={transferType === 'domestic' ? 'bg-[#cca858] text-[#121217] hover:bg-[#b5954a] h-12 sm:h-10' : 'border-[#27272a] text-gray-400 hover:text-white hover:bg-[#1a1a20] h-12 sm:h-10'}
                   >
-                    <ArrowUpRight className="h-4 w-4 mr-2" /> Domestic Wire
+                    <ArrowUpRight className="h-4 w-4 mr-2" /> Domestic
                   </Button>
                   <Button 
                     variant={transferType === 'international' ? 'default' : 'outline'} 
                     onClick={() => setTransferType('international')}
-                    className={transferType === 'international' ? 'bg-[#cca858] text-[#121217] hover:bg-[#b5954a]' : 'border-[#27272a] text-gray-400 hover:text-white hover:bg-[#1a1a20]'}
+                    className={transferType === 'international' ? 'bg-[#cca858] text-[#121217] hover:bg-[#b5954a] h-12 sm:h-10' : 'border-[#27272a] text-gray-400 hover:text-white hover:bg-[#1a1a20] h-12 sm:h-10'}
                   >
-                    <Globe className="h-4 w-4 mr-2" /> International Wire
+                    <Globe className="h-4 w-4 mr-2" /> International
                   </Button>
                 </div>
               </CardHeader>
@@ -117,13 +117,13 @@ export default function Transfers({ user, onLogout }) {
                     <div className="space-y-3">
                       <Label className="text-gray-400">Amount (USD)</Label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-500">$</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-gray-500">$</span>
                         <Input 
                           type="number" 
                           value={amount}
                           onChange={(e) => setAmount(e.target.value)}
                           placeholder="0.00"
-                          className="h-20 pl-10 text-4xl font-light bg-[#0a0a0c] border-[#27272a] text-white focus-visible:ring-[#cca858]"
+                          className="h-16 sm:h-20 pl-12 text-3xl sm:text-4xl font-light bg-[#0a0a0c] border-[#27272a] text-white focus-visible:ring-[#cca858]"
                         />
                       </div>
                     </div>
