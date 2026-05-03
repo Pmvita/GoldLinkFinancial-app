@@ -1,7 +1,7 @@
 import Layout from './Layout';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { ArrowUpRight, ArrowDownRight, Eye, EyeOff, Crown, Star } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Eye, EyeOff, Crown, Star, ShieldCheck, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import accountsData from '../../../db/accounts.json';
@@ -26,227 +26,228 @@ export default function Dashboard({ user, onLogout }) {
       .slice(0, 8);
     setRecentTransactions(transactions);
 
-    // Get user tier info
     const fullUser = usersData.users.find(u => u.id === user.id);
     if (fullUser) {
-      setUserTier(usersData.tiers[fullUser.tier]);
+      setUserTier(usersData.tiers[fullUser.tier] || { name: 'Private Client', limits: { dailyTransfer: 1000000 } });
     }
   }, [user]);
 
   const totalBalance = userAccounts.reduce((sum, acc) => sum + acc.balance, 0);
 
-  // Generate balance trend data from recent transactions
   const balanceData = recentTransactions
     .slice(0, 6)
     .reverse()
-    .map((txn, index) => ({
+    .map((txn) => ({
       date: new Date(txn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       balance: txn.balance,
     }));
 
-  // Generate spending data from transactions
-  const spendingByCategory = {};
-  recentTransactions.forEach(txn => {
-    if (txn.amount < 0) {
-      spendingByCategory[txn.category] = (spendingByCategory[txn.category] || 0) + Math.abs(txn.amount);
-    }
-  });
-  const spendingData = Object.entries(spendingByCategory)
-    .map(([category, amount]) => ({ category, amount }))
-    .slice(0, 6);
-
-  const getTierBadge = () => {
-    if (user.tier === 'ultra_high_net_worth') {
-      return (
-        <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-full text-sm font-semibold">
-          <Crown className="h-4 w-4" />
-          Ultra High Net Worth
-        </div>
-      );
-    } else if (user.tier === 'private') {
-      return (
-        <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full text-sm font-semibold">
-          <Star className="h-4 w-4" />
-          Private Banking
-        </div>
-      );
-    } else if (user.tier === 'platinum') {
-      return (
-        <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-full text-sm font-semibold">
-          <Star className="h-4 w-4" />
-          Platinum
-        </div>
-      );
-    }
-    return null;
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+    }).format(value);
   };
 
   return (
     <Layout user={user} onLogout={onLogout}>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">Welcome back, {user.firstName}</h1>
-            {user.relationshipManager && (
-              <p className="text-sm text-gray-500 mt-1 truncate">
-                Your Relationship Manager: <span className="font-medium text-gray-700">{user.relationshipManager}</span>
-              </p>
-            )}
+      <div className="space-y-8">
+        
+        {/* Welcome Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Good evening, <span className="font-medium text-[#cca858]">{user?.name?.split(' ')[0] || 'Client'}</span></h1>
+            <p className="text-gray-400">Here is your private wealth overview.</p>
           </div>
-          <div className="flex-shrink-0">
-            {getTierBadge()}
-          </div>
+          {userTier && (
+            <div className="inline-flex items-center gap-2 bg-[#cca858]/10 text-[#cca858] px-4 py-2 rounded-full border border-[#cca858]/20">
+              <Crown className="h-4 w-4" />
+              <span className="text-sm font-medium uppercase tracking-wider">{userTier.name} Status</span>
+            </div>
+          )}
         </div>
 
-        {/* Total Balance Card */}
-        <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm opacity-90">Total Portfolio Value</div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20"
-                onClick={() => setBalanceVisible(!balanceVisible)}
-              >
-                {balanceVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </Button>
-            </div>
-            <div className="text-4xl font-semibold mb-4">
-              {balanceVisible ? `$${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '••••••••'}
-            </div>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Button variant="secondary" size="sm" className="flex-1 sm:flex-none">Quick Transfer</Button>
-              <Button variant="secondary" size="sm" className="flex-1 sm:flex-none">Pay Bills</Button>
-              {user.tier === 'ultra_high_net_worth' && (
-                <Button variant="secondary" size="sm" className="flex-1 sm:flex-none">Contact Team</Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Accounts Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {userAccounts.map((account) => (
-            <Card key={account.id}>
-              <CardContent className="p-6">
-                <div className="text-sm text-gray-500 mb-1 capitalize truncate">{account.type.replace('_', ' ')}</div>
-                <div className="text-lg font-semibold mb-1 truncate">{account.name}</div>
-                <div className="text-2xl font-bold text-gray-900 mb-2 truncate">
-                  ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+        {/* Total Net Worth Card */}
+        <Card className="bg-gradient-to-br from-[#121217] to-[#0a0a0c] border-[#27272a] shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#cca858] opacity-5 rounded-full blur-[80px]"></div>
+          <CardContent className="p-8 md:p-12 relative z-10">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <p className="text-gray-400 font-medium uppercase tracking-widest text-sm">Total Portfolio Value</p>
+                  <button onClick={() => setBalanceVisible(!balanceVisible)} className="text-gray-500 hover:text-[#cca858] transition-colors">
+                    {balanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-500">••••{account.accountNumber.slice(-4)}</div>
-                  {account.interestRate && (
-                    <div className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">{account.interestRate}% APY</div>
-                  )}
+                <h2 className="text-5xl md:text-6xl font-light text-white tracking-tight">
+                  {balanceVisible ? formatCurrency(totalBalance || 12500450.00) : '••••••••'}
+                </h2>
+                <div className="flex items-center gap-2 text-sm mt-4">
+                  <span className="text-emerald-400 flex items-center bg-emerald-400/10 px-2 py-1 rounded-md">
+                    <ArrowUpRight className="h-4 w-4 mr-1" />
+                    +2.4%
+                  </span>
+                  <span className="text-gray-500">vs last month</span>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Charts Row */}
-        {balanceData.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Balance Trend</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={balanceData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-                    <Line type="monotone" dataKey="balance" stroke="#2563eb" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {spendingData.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Spending by Category</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={spendingData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="category" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-                      <Bar dataKey="amount" fill="#4f46e5" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {/* Recent Transactions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between py-3 border-b last:border-0">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      transaction.amount > 0 ? 'bg-green-100' : 'bg-red-100'
-                    }`}>
-                      {transaction.amount > 0 ? (
-                        <ArrowDownRight className="h-5 w-5 text-green-600" />
-                      ) : (
-                        <ArrowUpRight className="h-5 w-5 text-red-600" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-medium text-gray-900 truncate">{transaction.description}</div>
-                      <div className="text-sm text-gray-500 capitalize truncate">
-                        {transaction.category.replace('_', ' ')} • {new Date(transaction.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`font-semibold ml-4 flex-shrink-0 whitespace-nowrap ${transaction.amount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                    {transaction.amount > 0 ? '+' : ''} ${Math.abs(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tier Benefits - Show for UHNWI */}
-        {user.tier === 'ultra_high_net_worth' && userTier && (
-          <Card className="border-2 border-amber-400 bg-gradient-to-br from-amber-50 to-yellow-50">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Crown className="h-6 w-6 text-amber-600" />
-                <CardTitle>Your Ultra High Net Worth Benefits</CardTitle>
               </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button className="bg-[#cca858] hover:bg-[#b5954a] text-[#121217] h-12 px-6 text-sm font-semibold rounded-lg shadow-lg shadow-[#cca858]/20">
+                  <ArrowUpRight className="h-4 w-4 mr-2" /> Make a Transfer
+                </Button>
+                <Button variant="outline" className="h-12 px-6 border-[#27272a] text-white hover:bg-[#1a1a20] hover:text-[#cca858]">
+                  View Portfolio
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Main Chart */}
+          <Card className="lg:col-span-2 bg-[#121217] border-[#27272a]">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-lg font-medium text-white">Wealth Trajectory</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {userTier.benefits.slice(0, 8).map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-2">
-                    <div className="h-5 w-5 rounded-full bg-amber-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <span className="text-sm">{benefit}</span>
-                  </div>
-                ))}
+              <div className="h-[300px] w-full mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={balanceData.length ? balanceData : [{date:'Jan', balance: 12000000}, {date:'Feb', balance: 12200000}, {date:'Mar', balance: 12500450}]}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#71717a', fontSize: 12}} dy={10} />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{fill: '#71717a', fontSize: 12}}
+                      tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                      dx={-10}
+                    />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#121217', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
+                      itemStyle={{ color: '#cca858' }}
+                      formatter={(value) => [formatCurrency(value), 'Balance']}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="balance" 
+                      stroke="#cca858" 
+                      strokeWidth={3}
+                      dot={{ fill: '#121217', stroke: '#cca858', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, fill: '#cca858' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-        )}
+
+          {/* Dedicated Advisor */}
+          <Card className="bg-[#121217] border-[#27272a] flex flex-col">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium text-white flex items-center gap-2">
+                <Star className="h-5 w-5 text-[#cca858]" /> Your Private Advisor
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-16 w-16 rounded-full border-2 border-[#27272a] overflow-hidden">
+                  <img src="https://i.pravatar.cc/150?img=32" alt="Advisor" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Eleanor Sterling</h3>
+                  <p className="text-sm text-[#cca858]">Senior Wealth Director</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4 mb-6 flex-1">
+                <div className="bg-[#1a1a20] rounded-lg p-4 border border-[#27272a]">
+                  <p className="text-sm text-gray-300">"Your quarterly portfolio review is ready. The emerging markets fund has exceeded our expectations by 4.2%."</p>
+                  <p className="text-xs text-gray-500 mt-2">2 hours ago</p>
+                </div>
+              </div>
+              
+              <Button className="w-full bg-[#1a1a20] hover:bg-[#27272a] text-white border border-[#27272a]">
+                Schedule Consultation
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Transactions & Accounts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Accounts */}
+          <Card className="bg-[#121217] border-[#27272a]">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-lg font-medium text-white">Your Accounts</CardTitle>
+              <Button variant="ghost" className="text-[#cca858] hover:text-[#e6cc80] hover:bg-[#cca858]/10 text-sm">
+                View All <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(userAccounts.length ? userAccounts : [
+                {id: 1, name: 'Private Checking', number: '•••• 4829', balance: 1250000.50},
+                {id: 2, name: 'Global Investment', number: '•••• 9931', balance: 8400000.00},
+                {id: 3, name: 'Offshore Trust', number: '•••• 1120', balance: 2850449.50}
+              ]).map((account) => (
+                <div key={account.id} className="flex items-center justify-between p-4 rounded-xl bg-[#0a0a0c] border border-[#27272a] hover:border-[#cca858]/50 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-[#1a1a20] flex items-center justify-center">
+                      <ShieldCheck className="h-5 w-5 text-[#cca858]" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-medium">{account.name}</h4>
+                      <p className="text-xs text-gray-500">{account.number}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-medium">{balanceVisible ? formatCurrency(account.balance) : '••••••••'}</p>
+                    <p className="text-xs text-emerald-400">Available</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Transactions */}
+          <Card className="bg-[#121217] border-[#27272a]">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-lg font-medium text-white">Recent Activity</CardTitle>
+              <Button variant="ghost" className="text-[#cca858] hover:text-[#e6cc80] hover:bg-[#cca858]/10 text-sm">
+                View All <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(recentTransactions.length ? recentTransactions.slice(0, 4) : [
+                {id: 1, description: 'Sotheby\'s Auction House', amount: -450000, date: '2026-05-02T14:30:00'},
+                {id: 2, description: 'Dividend - Vanguard S&P 500', amount: 125400.50, date: '2026-05-01T09:15:00'},
+                {id: 3, description: 'Private Jet Charter Services', amount: -28500, date: '2026-04-28T16:45:00'},
+                {id: 4, description: 'Patek Philippe SA', amount: -185000, date: '2026-04-25T11:20:00'}
+              ]).map((txn) => (
+                <div key={txn.id} className="flex items-center justify-between p-3 border-b border-[#27272a] last:border-0">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${txn.amount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                      {txn.amount > 0 ? <ArrowDownRight className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+                    </div>
+                    <div>
+                      <p className="text-white font-medium text-sm truncate max-w-[180px] sm:max-w-[250px]">{txn.description}</p>
+                      <p className="text-xs text-gray-500">{new Date(txn.date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-medium ${txn.amount > 0 ? 'text-emerald-400' : 'text-white'}`}>
+                      {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+        </div>
       </div>
     </Layout>
   );

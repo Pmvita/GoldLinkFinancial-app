@@ -1,281 +1,124 @@
 import Layout from './Layout';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Camera, Upload, Check, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { Camera, Upload, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Progress } from './ui/progress';
-
-const accounts = [
-  { id: 1, name: 'Checking Account', balance: 12458.32, number: '****4521' },
-  { id: 2, name: 'Savings Account', balance: 45230.85, number: '****7832' },
-];
-
-const recentDeposits = [
-  { id: 1, amount: 1250.00, date: '2026-04-28', status: 'Completed', account: 'Checking' },
-  { id: 2, amount: 850.50, date: '2026-04-15', status: 'Completed', account: 'Checking' },
-  { id: 3, amount: 2100.00, date: '2026-04-02', status: 'Completed', account: 'Savings' },
-];
 
 export default function MobileDeposit({ user, onLogout }) {
-  const [step, setStep] = useState('upload');
-  const [selectedAccount, setSelectedAccount] = useState('');
   const [amount, setAmount] = useState('');
-  const [frontImage, setFrontImage] = useState(null);
-  const [backImage, setBackImage] = useState(null);
-  const [processing, setProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [step, setStep] = useState('form');
 
-  const handleImageUpload = (side, event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (side === 'front') {
-          setFrontImage(e.target.result);
-        } else {
-          setBackImage(e.target.result);
-        }
-        toast.success(`${side === 'front' ? 'Front' : 'Back'} of check uploaded`);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleProcess = () => {
-    if (!selectedAccount || !amount || !frontImage || !backImage) {
-      toast.error('Please complete all required fields');
+  const handleDeposit = (e) => {
+    e.preventDefault();
+    if (!amount) {
+      toast.error('Please enter an amount');
       return;
     }
-
-    setProcessing(true);
-    setProgress(0);
-
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setProcessing(false);
-          setStep('success');
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 300);
-  };
-
-  const handleNewDeposit = () => {
-    setStep('upload');
-    setSelectedAccount('');
-    setAmount('');
-    setFrontImage(null);
-    setBackImage(null);
-    setProgress(0);
+    setStep('processing');
+    setTimeout(() => {
+      setStep('success');
+    }, 2000);
   };
 
   return (
     <Layout user={user} onLogout={onLogout}>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold">Mobile Check Deposit</h1>
+      <div className="space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Check Deposit</h1>
+            <p className="text-gray-400">Securely deposit checks to your accounts.</p>
+          </div>
         </div>
 
-        {step === 'upload' && (
-          <>
-            <Card className="bg-blue-50 border-blue-200">
-              <CardContent className="p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-900">
-                    <p className="font-medium mb-1">Before you start:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      <li>Endorse the back of your check with your signature</li>
-                      <li>Write "For Mobile Deposit Only" below your signature</li>
-                      <li>Take photos in a well-lit area with a plain background</li>
-                      <li>Ensure all four corners of the check are visible</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Deposit Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="deposit-account">Deposit To</Label>
-                  <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-                    <SelectTrigger id="deposit-account">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map((account) => (
-                        <SelectItem key={account.id} value={String(account.id)}>
-                          {account.name} ({account.number})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="check-amount">Check Amount</Label>
-                  <Input
-                    id="check-amount"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Front of Check</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                      {frontImage ? (
-                        <div className="space-y-2">
-                          <img src={frontImage} alt="Front of check" className="mx-auto max-h-48 rounded" />
-                          <Button variant="outline" size="sm" onClick={() => setFrontImage(null)}>
-                            Remove
-                          </Button>
-                        </div>
-                      ) : (
-                        <label className="cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            className="hidden"
-                            onChange={(e) => handleImageUpload('front', e)}
-                          />
-                          <Camera className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                          <p className="text-sm text-gray-600">Take or upload photo</p>
-                        </label>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Back of Check</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                      {backImage ? (
-                        <div className="space-y-2">
-                          <img src={backImage} alt="Back of check" className="mx-auto max-h-48 rounded" />
-                          <Button variant="outline" size="sm" onClick={() => setBackImage(null)}>
-                            Remove
-                          </Button>
-                        </div>
-                      ) : (
-                        <label className="cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            className="hidden"
-                            onChange={(e) => handleImageUpload('back', e)}
-                          />
-                          <Camera className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                          <p className="text-sm text-gray-600">Take or upload photo</p>
-                        </label>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {processing ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Processing deposit...</span>
-                      <span>{progress}%</span>
-                    </div>
-                    <Progress value={progress} />
-                  </div>
-                ) : (
-                  <Button
-                    className="w-full"
-                    onClick={handleProcess}
-                    disabled={!selectedAccount || !amount || !frontImage || !backImage}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Submit Deposit
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </>
-        )}
-
-        {step === 'success' && (
-          <Card>
-            <CardContent className="p-8">
-              <div className="text-center space-y-4">
-                <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                  <Check className="h-8 w-8 text-green-600" />
-                </div>
-                <h2 className="text-2xl font-semibold">Deposit Submitted Successfully!</h2>
-                <p className="text-gray-600">
-                  Your check for ${amount} has been submitted for processing.
-                </p>
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Deposit Amount:</span>
-                    <span className="font-semibold">${amount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Deposit To:</span>
-                    <span className="font-semibold">
-                      {accounts.find(a => a.id === Number(selectedAccount))?.name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Expected Availability:</span>
-                    <span className="font-semibold">1-2 business days</span>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-500">
-                  Please retain your check for 14 days, then destroy it securely.
-                </p>
-                <Button onClick={handleNewDeposit} className="w-full">Make Another Deposit</Button>
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-[#121217] border-[#27272a]">
+            <CardHeader className="text-center pb-8 border-b border-[#27272a]">
+              <div className="mx-auto w-16 h-16 rounded-full bg-[#cca858]/10 flex items-center justify-center mb-4">
+                <Camera className="h-8 w-8 text-[#cca858]" />
               </div>
+              <CardTitle className="text-2xl font-light text-white">Deposit a Check</CardTitle>
+            </CardHeader>
+            <CardContent className="p-8">
+              {step === 'form' && (
+                <form onSubmit={handleDeposit} className="space-y-6">
+                  <div className="space-y-3">
+                    <Label className="text-gray-400">Deposit To</Label>
+                    <Select defaultValue="checking">
+                      <SelectTrigger className="h-14 bg-[#0a0a0c] border-[#27272a] text-white focus:ring-[#cca858]">
+                        <SelectValue placeholder="Select account" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#121217] border-[#27272a] text-white">
+                        <SelectItem value="checking">Private Checking (•••• 4829)</SelectItem>
+                        <SelectItem value="investment">Global Investment (•••• 9931)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-gray-400">Check Amount (USD)</Label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-500">$</span>
+                      <Input 
+                        type="number" 
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="h-16 pl-10 text-2xl font-light bg-[#0a0a0c] border-[#27272a] text-white focus-visible:ring-[#cca858]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                    <div className="border-2 border-dashed border-[#27272a] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#cca858]/50 hover:bg-[#0a0a0c] transition-all h-32">
+                      <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                      <span className="text-sm text-gray-300">Front of Check</span>
+                    </div>
+                    <div className="border-2 border-dashed border-[#27272a] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#cca858]/50 hover:bg-[#0a0a0c] transition-all h-32">
+                      <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                      <span className="text-sm text-gray-300">Back of Check</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-6">
+                    <Button type="submit" className="w-full h-14 text-lg font-medium bg-[#cca858] hover:bg-[#b5954a] text-[#121217]">
+                      Submit Deposit
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {step === 'processing' && (
+                <div className="py-12 flex flex-col items-center justify-center space-y-6">
+                  <div className="w-16 h-16 border-4 border-[#27272a] border-t-[#cca858] rounded-full animate-spin"></div>
+                  <h3 className="text-xl text-white font-medium">Analyzing check...</h3>
+                  <p className="text-gray-400 text-center">Verifying amounts and signatures securely.</p>
+                </div>
+              )}
+
+              {step === 'success' && (
+                <div className="py-8 flex flex-col items-center justify-center space-y-6 text-center">
+                  <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                    <CheckCircle className="w-10 h-10 text-emerald-500" />
+                  </div>
+                  <h3 className="text-2xl font-light text-white">Deposit Received</h3>
+                  <p className="text-gray-400">Your check for <strong className="text-white">${Number(amount).toLocaleString()}</strong> is being processed.</p>
+                  <p className="text-sm text-[#cca858] bg-[#cca858]/10 p-3 rounded-lg border border-[#cca858]/20">
+                    Funds will be available immediately per your account tier limits.
+                  </p>
+                  <div className="pt-4 w-full space-y-3">
+                    <Button onClick={() => { setAmount(''); setStep('form'); }} className="w-full h-12 bg-[#1a1a20] hover:bg-[#27272a] text-white border border-[#27272a]">
+                      Deposit Another Check
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
-
-        {/* Recent Deposits */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Deposits</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentDeposits.map((deposit) => (
-                <div key={deposit.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <ImageIcon className="h-5 w-5 text-green-600 flex-shrink-0" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-medium text-gray-900 truncate">${deposit.amount.toFixed(2)}</div>
-                      <div className="text-sm text-gray-500 truncate">{deposit.account} • {deposit.date}</div>
-                    </div>
-                  </div>
-                  <div className="text-sm flex-shrink-0">
-                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded whitespace-nowrap">
-                      {deposit.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </Layout>
   );
