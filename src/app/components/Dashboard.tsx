@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { ArrowUpRight, ArrowDownRight, Eye, EyeOff, Crown, Star, ShieldCheck, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import accountsData from '../../../db/accounts.json';
@@ -10,6 +11,7 @@ import transactionsData from '../../../db/transactions.json';
 import usersData from '../../../db/users.json';
 
 export default function Dashboard({ user, onLogout }) {
+  const navigate = useNavigate();
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [userAccounts, setUserAccounts] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
@@ -145,10 +147,10 @@ export default function Dashboard({ user, onLogout }) {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto mt-4 lg:mt-0">
-                <Button className="w-full sm:w-auto bg-[#cca858] hover:bg-[#b5954a] text-[#121217] h-14 sm:h-12 px-6 text-base sm:text-sm font-semibold rounded-xl sm:rounded-lg shadow-lg shadow-[#cca858]/20">
+                <Button onClick={() => navigate('/transfers')} className="w-full sm:w-auto bg-[#cca858] hover:bg-[#b5954a] text-[#121217] h-14 sm:h-12 px-6 text-base sm:text-sm font-semibold rounded-xl sm:rounded-lg shadow-lg shadow-[#cca858]/20">
                   <ArrowUpRight className="h-5 w-5 sm:h-4 sm:w-4 mr-2" /> Make a Transfer
                 </Button>
-                <Button variant="outline" className="w-full sm:w-auto h-14 sm:h-12 px-6 rounded-xl sm:rounded-lg border-[#27272a] bg-transparent text-white hover:bg-[#1a1a20] hover:text-[#cca858] text-base sm:text-sm">
+                <Button onClick={() => navigate('/accounts')} variant="outline" className="w-full sm:w-auto h-14 sm:h-12 px-6 rounded-xl sm:rounded-lg border-[#27272a] bg-transparent text-white hover:bg-[#1a1a20] hover:text-[#cca858] text-base sm:text-sm">
                   View Portfolio
                 </Button>
               </div>
@@ -236,7 +238,7 @@ export default function Dashboard({ user, onLogout }) {
                 </div>
               </div>
               
-              <Button className="w-full bg-[#1a1a20] hover:bg-[#27272a] text-white border border-[#27272a]">
+              <Button onClick={() => window.open('mailto:advisor@goldlinkbank.com?subject=Consultation%20Request', '_blank')} className="w-full bg-[#1a1a20] hover:bg-[#27272a] text-white border border-[#27272a]">
                 Schedule Consultation
               </Button>
             </CardContent>
