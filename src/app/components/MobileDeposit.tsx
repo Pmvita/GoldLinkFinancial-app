@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Camera, Upload, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function MobileDeposit({ user, onLogout }) {
   const [amount, setAmount] = useState('');
@@ -24,17 +25,35 @@ export default function MobileDeposit({ user, onLogout }) {
     }, 2000);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
     <Layout user={user} onLogout={onLogout}>
-      <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div 
+        className="space-y-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Check Deposit</h1>
             <p className="text-gray-400">Securely deposit checks to your accounts.</p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="max-w-2xl mx-auto">
+        <motion.div variants={itemVariants} className="max-w-2xl mx-auto">
           <Card className="bg-[#121217] border-[#27272a]">
             <CardHeader className="text-center pb-8 border-b border-[#27272a]">
               <div className="mx-auto w-16 h-16 rounded-full bg-[#cca858]/10 flex items-center justify-center mb-4">
@@ -43,8 +62,16 @@ export default function MobileDeposit({ user, onLogout }) {
               <CardTitle className="text-2xl font-light text-white">Deposit a Check</CardTitle>
             </CardHeader>
             <CardContent className="p-8">
+              <AnimatePresence mode="wait">
               {step === 'form' && (
-                <form onSubmit={handleDeposit} className="space-y-6">
+                <motion.form 
+                  key="form"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  onSubmit={handleDeposit} 
+                  className="space-y-6"
+                >
                   <div className="space-y-3">
                     <Label className="text-gray-400">Deposit To</Label>
                     <Select defaultValue="checking">
@@ -88,19 +115,30 @@ export default function MobileDeposit({ user, onLogout }) {
                       Submit Deposit
                     </Button>
                   </div>
-                </form>
+                </motion.form>
               )}
 
               {step === 'processing' && (
-                <div className="py-12 flex flex-col items-center justify-center space-y-6">
+                <motion.div 
+                  key="processing"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  className="py-12 flex flex-col items-center justify-center space-y-6"
+                >
                   <div className="w-16 h-16 border-4 border-[#27272a] border-t-[#cca858] rounded-full animate-spin"></div>
                   <h3 className="text-xl text-white font-medium">Analyzing check...</h3>
                   <p className="text-gray-400 text-center">Verifying amounts and signatures securely.</p>
-                </div>
+                </motion.div>
               )}
 
               {step === 'success' && (
-                <div className="py-8 flex flex-col items-center justify-center space-y-6 text-center">
+                <motion.div 
+                  key="success"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="py-8 flex flex-col items-center justify-center space-y-6 text-center"
+                >
                   <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center">
                     <CheckCircle className="w-10 h-10 text-emerald-500" />
                   </div>
@@ -114,12 +152,13 @@ export default function MobileDeposit({ user, onLogout }) {
                       Deposit Another Check
                     </Button>
                   </div>
-                </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 }

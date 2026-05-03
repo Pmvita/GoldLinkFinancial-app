@@ -3,14 +3,33 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { CreditCard, Lock, Settings, Snowflake, Eye } from 'lucide-react';
 import { useState } from 'react';
+import { motion } from 'motion/react';
 
 export default function Cards({ user, onLogout }) {
   const [showNumber, setShowNumber] = useState(false);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
     <Layout user={user} onLogout={onLogout}>
-      <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div 
+        className="space-y-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Cards & Access</h1>
             <p className="text-gray-400">Control your global purchasing power.</p>
@@ -18,9 +37,9 @@ export default function Cards({ user, onLogout }) {
           <Button variant="outline" className="border-[#27272a] text-white hover:bg-[#1a1a20]">
             <Settings className="h-4 w-4 mr-2" /> Card Settings
           </Button>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Card Visual */}
           <div className="space-y-6">
             <div className="relative aspect-[1.586/1] w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl p-6 flex flex-col justify-between"
@@ -97,8 +116,8 @@ export default function Cards({ user, onLogout }) {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 }

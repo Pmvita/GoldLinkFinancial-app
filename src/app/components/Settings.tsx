@@ -4,17 +4,36 @@ import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { Button } from './ui/button';
 import { User, Bell, Shield, Key } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export default function Settings({ user, onLogout }) {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
     <Layout user={user} onLogout={onLogout}>
-      <div className="space-y-8">
-        <div>
+      <motion.div 
+        className="space-y-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={itemVariants}>
           <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Preferences</h1>
           <p className="text-gray-400">Configure your banking experience.</p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-2">
             {[
               { icon: User, label: 'Profile' },
@@ -98,8 +117,8 @@ export default function Settings({ user, onLogout }) {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 }
