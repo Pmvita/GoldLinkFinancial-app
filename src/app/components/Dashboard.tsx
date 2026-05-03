@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { ArrowUpRight, ArrowDownRight, Eye, EyeOff, Crown, Star, ShieldCheck, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import accountsData from '../../../db/accounts.json';
 import transactionsData from '../../../db/transactions.json';
@@ -40,7 +41,7 @@ export default function Dashboard({ user, onLogout }) {
     let currentBalance = totalBalance || 12500450.00;
 
     for (const txn of recentTransactions) {
-      const display = new Date(txn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const display = new Date(txn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) || 'Unknown';
       if (!seenDates.has(display)) {
         seenDates.add(display);
         grouped.push({
@@ -75,12 +76,32 @@ export default function Dashboard({ user, onLogout }) {
     }).format(value);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
     <Layout user={user} onLogout={onLogout}>
-      <div className="space-y-8">
+      <motion.div 
+        className="space-y-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
         
         {/* Welcome Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Good {(() => {
               const hour = new Date().getHours();
@@ -96,10 +117,11 @@ export default function Dashboard({ user, onLogout }) {
               <span className="text-sm font-medium uppercase tracking-wider">{userTier.name} Status</span>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Total Net Worth Card */}
-        <Card className="bg-gradient-to-br from-[#121217] to-[#0a0a0c] border-[#27272a] shadow-2xl relative overflow-hidden">
+        <motion.div variants={itemVariants}>
+          <Card className="bg-gradient-to-br from-[#121217] to-[#0a0a0c] border-[#27272a] shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#cca858] opacity-5 rounded-full blur-[80px]"></div>
           <CardContent className="p-6 sm:p-8 md:p-12 relative z-10">
             <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6">
@@ -133,9 +155,10 @@ export default function Dashboard({ user, onLogout }) {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
 
         {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Main Chart */}
           <Card className="lg:col-span-2 bg-[#121217] border-[#27272a]">
@@ -155,7 +178,7 @@ export default function Dashboard({ user, onLogout }) {
                       dy={10}
                     />
                     <YAxis 
-                      domain={['auto', 'auto']}
+                      domain={[(dataMin) => dataMin === 0 ? 0 : dataMin * 0.95, (dataMax) => dataMax === 0 ? 100 : dataMax * 1.05]}
                       axisLine={false} 
                       tickLine={false} 
                       tick={{fill: '#71717a', fontSize: 12}}
@@ -211,10 +234,10 @@ export default function Dashboard({ user, onLogout }) {
               </Button>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
         {/* Recent Transactions & Accounts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Accounts */}
           <Card className="bg-[#121217] border-[#27272a]">
@@ -284,8 +307,8 @@ export default function Dashboard({ user, onLogout }) {
             </CardContent>
           </Card>
 
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 }

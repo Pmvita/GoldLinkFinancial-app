@@ -1,6 +1,7 @@
 import Layout from './Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { motion } from 'motion/react';
 
 export default function Budgeting({ user, onLogout }) {
   const data = [
@@ -21,15 +22,33 @@ export default function Budgeting({ user, onLogout }) {
     }).format(value);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
     <Layout user={user} onLogout={onLogout}>
-      <div className="space-y-8">
-        <div>
+      <motion.div 
+        className="space-y-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={itemVariants}>
           <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Wealth Allocation</h1>
           <p className="text-gray-400">Macro overview of your global portfolio.</p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Card className="bg-[#121217] border-[#27272a] h-[500px]">
               <CardHeader>
@@ -47,6 +66,7 @@ export default function Budgeting({ user, onLogout }) {
                       outerRadius={140}
                       paddingAngle={2}
                       dataKey="value"
+                      nameKey="name"
                       stroke="none"
                     >
                       {data.map((entry, index) => (
@@ -93,8 +113,8 @@ export default function Budgeting({ user, onLogout }) {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 }

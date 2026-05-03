@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Button } from './ui/button';
 import { ShieldCheck, Plus, ArrowUpRight, ArrowDownRight, CreditCard, Landmark, LineChart, MoreHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import accountsData from '../../../db/accounts.json';
 import transactionsData from '../../../db/transactions.json';
 
@@ -40,10 +41,28 @@ export default function Accounts({ user, onLogout }) {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
     <Layout user={user} onLogout={onLogout}>
-      <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div 
+        className="space-y-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Accounts Portfolio</h1>
             <p className="text-gray-400">Manage and monitor your private wealth accounts.</p>
@@ -51,9 +70,9 @@ export default function Accounts({ user, onLogout }) {
           <Button className="bg-[#cca858] hover:bg-[#b5954a] text-[#121217] shadow-lg shadow-[#cca858]/20 w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" /> Open New Account
           </Button>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             {userAccounts.map((account) => (
               <Card key={account.id} className="bg-[#121217] border-[#27272a] hover:border-[#cca858]/50 transition-all overflow-hidden group">
@@ -125,8 +144,8 @@ export default function Accounts({ user, onLogout }) {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 }

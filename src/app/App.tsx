@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import { AnimatePresence } from 'motion/react';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Accounts from './components/Accounts';
@@ -9,11 +10,13 @@ import MobileDeposit from './components/MobileDeposit';
 import Cards from './components/Cards';
 import Budgeting from './components/Budgeting';
 import Settings from './components/Settings';
+import { SplashScreen } from './components/SplashScreen';
 import { Toaster } from './components/ui/sonner';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [isBooting, setIsBooting] = useState(true);
 
   useEffect(() => {
     // Check for existing session
@@ -38,9 +41,15 @@ export default function App() {
   };
 
   return (
-    <BrowserRouter>
-      <Toaster />
-      <Routes>
+    <>
+      <AnimatePresence>
+        {isBooting && <SplashScreen key="splash" onComplete={() => setIsBooting(false)} />}
+      </AnimatePresence>
+
+      {!isBooting && (
+        <BrowserRouter>
+          <Toaster />
+          <Routes>
         <Route
           path="/login"
           element={
@@ -134,5 +143,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
+      )}
+    </>
   );
 }
