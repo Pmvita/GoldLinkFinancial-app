@@ -37,19 +37,34 @@ export default function Dashboard({ user, onLogout }) {
   const balanceData = (() => {
     const grouped = [];
     const seenDates = new Set();
+    let currentBalance = totalBalance || 12500450.00;
+
     for (const txn of recentTransactions) {
       const display = new Date(txn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       if (!seenDates.has(display)) {
         seenDates.add(display);
         grouped.push({
           id: txn.id,
-          date: txn.date,
           displayDate: display,
-          balance: txn.balance,
+          balance: currentBalance,
         });
       }
+      // Revert the transaction to compute historical end-of-day balances
+      currentBalance -= (txn.amount || 0);
     }
-    return grouped.slice(0, 6).reverse();
+    
+    const result = grouped.slice(0, 6).reverse();
+    
+    // Fix for Recharts duplicate key error when rendering a single data point
+    if (result.length === 1) {
+      result.unshift({
+        id: result[0].id + '-prev',
+        displayDate: 'Prev',
+        balance: result[0].balance
+      });
+    }
+    
+    return result;
   })();
 
   const formatCurrency = (value) => {
@@ -125,7 +140,7 @@ export default function Dashboard({ user, onLogout }) {
             <CardContent>
               <div className="h-[300px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={balanceData.length ? balanceData : [{displayDate:'Jan 1', balance: 12000000}, {displayDate:'Feb 1', balance: 12200000}, {displayDate:'Mar 1', balance: 12500450}]}>
+                  <LineChart data={balanceData.length ? balanceData : [{id: 'fb1', displayDate:'Jan 1', balance: 12000000}, {id: 'fb2', displayDate:'Feb 1', balance: 12200000}, {id: 'fb3', displayDate:'Mar 1', balance: 12500450}]}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
                     <XAxis 
                       dataKey="displayDate" 
@@ -135,6 +150,7 @@ export default function Dashboard({ user, onLogout }) {
                       dy={10}
                     />
                     <YAxis 
+                      domain={['auto', 'auto']}
                       axisLine={false} 
                       tickLine={false} 
                       tick={{fill: '#71717a', fontSize: 12}}
