@@ -1,0 +1,108 @@
+{
+  "accounts": [
+    {
+      "id": "ACC-001-CHK",
+      "userId": "USR-001",
+      "accountNumber": "8934567821",
+      "routingNumber": "021000021",
+      "type": "checking",
+      "name": "Private Wealth Checking",
+      "balance": 2847563.42,
+      "currency": "USD",
+      "status": "active",
+      "openedDate": "2018-03-15",
+      "interestRate": 1.75
+    },
+    {
+      "id": "ACC-001-SAV",
+      "userId": "USR-001",
+      "accountNumber": "8934567822",
+      "routingNumber": "021000021",
+      "type": "savings",
+      "name": "High-Yield Savings",
+      "balance": 8456982.18,
+      "currency": "USD",
+      "status": "active",
+      "openedDate": "2018-03-15",
+      "interestRate": 4.25
+    },
+    {
+      "id": "ACC-001-INV",
+      "userId": "USR-001",
+      "accountNumber": "8934567823",
+      "routingNumber": "021000021",
+      "type": "investment",
+      "name": "Portfolio Investment Account",
+      "balance": 24567890.55,
+      "currency": "USD",
+      "status": "active",
+      "openedDate": "2018-04-01",
+      "interestRate": null
+    },
+    {
+      "id": "ACC-001-MM",
+      "userId": "USR-001",
+      "accountNumber": "8934567824",
+      "routingNumber": "021000021",
+      "type": "money_market",
+      "name": "Money Market Account",
+      "balance": 5234567.89,
+      "currency": "USD",
+      "status": "active",
+      "openedDate": "2019-01-10",
+      "interestRate": 3.85
+    },
+    {
+      "id": "ACC-002-CHK",
+      "userId": "USR-002",
+      "accountNumber": "7823456791",
+      "routingNumber": "021000021",
+      "type": "checking",
+      "name": "Private Banking Checking",
+      "balance": 456789.32,
+      "currency": "USD",
+      "status": "active",
+      "openedDate": "2020-01-10",
+      "interestRate": 1.25
+    },
+    {
+      "id": "ACC-002-SAV",
+      "userId": "USR-002",
+      "accountNumber": "7823456792",
+      "routingNumber": "021000021",
+      "type": "savings",
+      "name": "Private Savings",
+      "balance": 1234567.85,
+      "currency": "USD",
+      "status": "active",
+      "openedDate": "2020-01-10",
+      "interestRate": 3.75
+    },
+    {
+      "id": "ACC-003-CHK",
+      "userId": "USR-003",
+      "accountNumber": "6712344521",
+      "routingNumber": "021000021",
+      "type": "checking",
+      "name": "Platinum Checking",
+      "balance": 342458.32,
+      "currency": "USD",
+      "status": "active",
+      "openedDate": "2022-06-20",
+      "interestRate": 0.75
+    },
+    {
+      "id": "ACC-003-SAV",
+      "userId": "USR-003",
+      "accountNumber": "6712347832",
+      "routingNumber": "021000021",
+      "type": "savings",
+      "name": "Platinum Savings",
+      "balance": 567230.85,
+      "currency": "USD",
+      "status": "active",
+      "openedDate": "2022-06-20",
+      "interestRate": 3.25
+    }
+  ]
+}

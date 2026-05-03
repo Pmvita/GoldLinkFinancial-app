@@ -1,0 +1,198 @@
+{
+  "budgets": [
+    {
+      "userId": "USR-001",
+      "monthlyBudget": 150000,
+      "categories": [
+        {
+          "name": "Luxury & Shopping",
+          "budget": 50000,
+          "spent": 48234.99,
+          "color": "#3b82f6"
+        },
+        {
+          "name": "Dining & Entertainment",
+          "budget": 25000,
+          "spent": 18750.50,
+          "color": "#8b5cf6"
+        },
+        {
+          "name": "Travel",
+          "budget": 40000,
+          "spent": 28500.00,
+          "color": "#10b981"
+        },
+        {
+          "name": "Housing & Utilities",
+          "budget": 15000,
+          "spent": 8950.00,
+          "color": "#f59e0b"
+        },
+        {
+          "name": "Transportation",
+          "budget": 10000,
+          "spent": 5678.90,
+          "color": "#06b6d4"
+        },
+        {
+          "name": "Personal Care",
+          "budget": 10000,
+          "spent": 6234.50,
+          "color": "#ec4899"
+        }
+      ],
+      "savingsGoals": [
+        {
+          "id": "GOAL-001-001",
+          "name": "Real Estate Investment Fund",
+          "target": 5000000,
+          "current": 3250000,
+          "color": "#3b82f6"
+        },
+        {
+          "id": "GOAL-001-002",
+          "name": "Art Collection Expansion",
+          "target": 2000000,
+          "current": 1450000,
+          "color": "#8b5cf6"
+        },
+        {
+          "id": "GOAL-001-003",
+          "name": "Charitable Foundation",
+          "target": 10000000,
+          "current": 6800000,
+          "color": "#10b981"
+        }
+      ]
+    },
+    {
+      "userId": "USR-002",
+      "monthlyBudget": 25000,
+      "categories": [
+        {
+          "name": "Groceries",
+          "budget": 1200,
+          "spent": 985.30,
+          "color": "#3b82f6"
+        },
+        {
+          "name": "Dining Out",
+          "budget": 1500,
+          "spent": 1287.50,
+          "color": "#8b5cf6"
+        },
+        {
+          "name": "Shopping",
+          "budget": 3000,
+          "spent": 3456.78,
+          "color": "#ef4444"
+        },
+        {
+          "name": "Transportation",
+          "budget": 800,
+          "spent": 598.75,
+          "color": "#10b981"
+        },
+        {
+          "name": "Entertainment",
+          "budget": 1000,
+          "spent": 756.00,
+          "color": "#f59e0b"
+        },
+        {
+          "name": "Housing",
+          "budget": 4500,
+          "spent": 4500.00,
+          "color": "#06b6d4"
+        }
+      ],
+      "savingsGoals": [
+        {
+          "id": "GOAL-002-001",
+          "name": "Down Payment Fund",
+          "target": 500000,
+          "current": 285000,
+          "color": "#3b82f6"
+        },
+        {
+          "id": "GOAL-002-002",
+          "name": "European Vacation",
+          "target": 25000,
+          "current": 18500,
+          "color": "#8b5cf6"
+        }
+      ]
+    },
+    {
+      "userId": "USR-003",
+      "monthlyBudget": 8000,
+      "categories": [
+        {
+          "name": "Groceries",
+          "budget": 600,
+          "spent": 452.30,
+          "color": "#3b82f6"
+        },
+        {
+          "name": "Dining Out",
+          "budget": 400,
+          "spent": 387.50,
+          "color": "#8b5cf6"
+        },
+        {
+          "name": "Transportation",
+          "budget": 350,
+          "spent": 298.75,
+          "color": "#10b981"
+        },
+        {
+          "name": "Entertainment",
+          "budget": 300,
+          "spent": 256.00,
+          "color": "#f59e0b"
+        },
+        {
+          "name": "Shopping",
+          "budget": 500,
+          "spent": 623.45,
+          "color": "#ef4444"
+        },
+        {
+          "name": "Utilities",
+          "budget": 350,
+          "spent": 315.20,
+          "color": "#06b6d4"
+        },
+        {
+          "name": "Housing",
+          "budget": 2800,
+          "spent": 2800.00,
+          "color": "#64748b"
+        }
+      ],
+      "savingsGoals": [
+        {
+          "id": "GOAL-003-001",
+          "name": "Emergency Fund",
+          "target": 30000,
+          "current": 22500,
+          "color": "#3b82f6"
+        },
+        {
+          "id": "GOAL-003-002",
+          "name": "New Car",
+          "target": 45000,
+          "current": 18200,
+          "color": "#10b981"
+        },
+        {
+          "id": "GOAL-003-003",
+          "name": "Wedding Fund",
+          "target": 50000,
+          "current": 12800,
+          "color": "#ec4899"
+        }
+      ]
+    }
+  ]
+}

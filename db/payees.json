@@ -1,0 +1,166 @@
+{
+  "payees": [
+    {
+      "id": "PAY-001-001",
+      "userId": "USR-001",
+      "name": "Park Avenue Condo Association",
+      "accountNumber": "HOA-432-PA-92A",
+      "category": "housing",
+      "defaultAmount": 8500.00,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 1,
+        "nextDue": "2026-06-01"
+      },
+      "lastPayment": {
+        "amount": 8500.00,
+        "date": "2026-05-01"
+      }
+    },
+    {
+      "id": "PAY-001-002",
+      "userId": "USR-001",
+      "name": "American Express Centurion",
+      "accountNumber": "AMEX-****-8765",
+      "category": "credit_card",
+      "defaultAmount": 25000.00,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 15,
+        "nextDue": "2026-05-15"
+      },
+      "lastPayment": {
+        "amount": 32456.78,
+        "date": "2026-04-15"
+      }
+    },
+    {
+      "id": "PAY-001-003",
+      "userId": "USR-001",
+      "name": "Verizon Wireless",
+      "accountNumber": "VZW-892-456-7821",
+      "category": "utilities",
+      "defaultAmount": 450.00,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 10,
+        "nextDue": "2026-05-10"
+      },
+      "lastPayment": {
+        "amount": 450.00,
+        "date": "2026-04-10"
+      }
+    },
+    {
+      "id": "PAY-002-001",
+      "userId": "USR-002",
+      "name": "Broadway Apartments LLC",
+      "accountNumber": "RENT-789-15C",
+      "category": "housing",
+      "defaultAmount": 4500.00,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 1,
+        "nextDue": "2026-06-01"
+      },
+      "lastPayment": {
+        "amount": 4500.00,
+        "date": "2026-05-01"
+      }
+    },
+    {
+      "id": "PAY-002-002",
+      "userId": "USR-002",
+      "name": "Con Edison",
+      "accountNumber": "CE-7823-456-791",
+      "category": "utilities",
+      "defaultAmount": 185.00,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 15,
+        "nextDue": "2026-05-15"
+      },
+      "lastPayment": {
+        "amount": 178.45,
+        "date": "2026-04-15"
+      }
+    },
+    {
+      "id": "PAY-003-001",
+      "userId": "USR-003",
+      "name": "Main Street Apartments",
+      "accountNumber": "RENT-123-4B",
+      "category": "housing",
+      "defaultAmount": 2800.00,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 1,
+        "nextDue": "2026-06-01"
+      },
+      "lastPayment": {
+        "amount": 2800.00,
+        "date": "2026-05-01"
+      }
+    },
+    {
+      "id": "PAY-003-002",
+      "userId": "USR-003",
+      "name": "Con Edison",
+      "accountNumber": "CE-6712-344-521",
+      "category": "utilities",
+      "defaultAmount": 145.00,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 15,
+        "nextDue": "2026-05-15"
+      },
+      "lastPayment": {
+        "amount": 145.32,
+        "date": "2026-04-15"
+      }
+    },
+    {
+      "id": "PAY-003-003",
+      "userId": "USR-003",
+      "name": "Spectrum Internet",
+      "accountNumber": "SPEC-891-234-567",
+      "category": "utilities",
+      "defaultAmount": 89.99,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 10,
+        "nextDue": "2026-05-10"
+      },
+      "lastPayment": {
+        "amount": 89.99,
+        "date": "2026-04-10"
+      }
+    },
+    {
+      "id": "PAY-003-004",
+      "userId": "USR-003",
+      "name": "LA Fitness",
+      "accountNumber": "LAF-567-890-123",
+      "category": "health",
+      "defaultAmount": 45.00,
+      "recurringPayment": {
+        "enabled": true,
+        "frequency": "monthly",
+        "dayOfMonth": 5,
+        "nextDue": "2026-05-05"
+      },
+      "lastPayment": {
+        "amount": 45.00,
+        "date": "2026-04-05"
+      }
+    }
+  ]
+}

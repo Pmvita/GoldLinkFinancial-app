@@ -1,0 +1,214 @@
+{
+  "users": [
+    {
+      "id": "USR-001",
+      "username": "pierre.mvita@privatewealth.com",
+      "password": "demo123",
+      "firstName": "Pierre",
+      "lastName": "Mvita",
+      "fullName": "Pierre Mvita",
+      "email": "pierre.mvita@privatewealth.com",
+      "phone": "+1 (212) 555-0001",
+      "tier": "ultra_high_net_worth",
+      "tierName": "Ultra High Net Worth",
+      "relationshipManager": "Victoria Sterling",
+      "relationshipManagerPhone": "+1 (212) 555-0100",
+      "memberSince": "2018-03-15",
+      "dateOfBirth": "1978-06-22",
+      "address": {
+        "street": "432 Park Avenue, Penthouse 92A",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10022",
+        "country": "USA"
+      },
+      "preferences": {
+        "biometricEnabled": true,
+        "twoFactorEnabled": true,
+        "notifications": {
+          "largePurchases": true,
+          "allPurchases": false,
+          "deposits": true,
+          "lowBalance": true,
+          "billReminders": true,
+          "budgetAlerts": true,
+          "loginAlerts": true,
+          "passwordChanges": true,
+          "suspicious": true
+        }
+      },
+      "lastLogin": "2026-05-03T08:15:00Z"
+    },
+    {
+      "id": "USR-002",
+      "username": "sarah.johnson@email.com",
+      "password": "demo123",
+      "firstName": "Sarah",
+      "lastName": "Johnson",
+      "fullName": "Sarah Johnson",
+      "email": "sarah.johnson@email.com",
+      "phone": "+1 (555) 123-4567",
+      "tier": "private",
+      "tierName": "Private Banking",
+      "relationshipManager": "Michael Chen",
+      "relationshipManagerPhone": "+1 (212) 555-0110",
+      "memberSince": "2020-01-10",
+      "dateOfBirth": "1985-11-14",
+      "address": {
+        "street": "789 Broadway, Apt 15C",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10003",
+        "country": "USA"
+      },
+      "preferences": {
+        "biometricEnabled": true,
+        "twoFactorEnabled": true,
+        "notifications": {
+          "largePurchases": true,
+          "allPurchases": false,
+          "deposits": true,
+          "lowBalance": true,
+          "billReminders": true,
+          "budgetAlerts": false,
+          "loginAlerts": true,
+          "passwordChanges": true,
+          "suspicious": true
+        }
+      },
+      "lastLogin": "2026-05-02T18:30:00Z"
+    },
+    {
+      "id": "USR-003",
+      "username": "demo@bank.com",
+      "password": "demo123",
+      "firstName": "John",
+      "lastName": "Smith",
+      "fullName": "John Smith",
+      "email": "demo@bank.com",
+      "phone": "+1 (555) 987-6543",
+      "tier": "platinum",
+      "tierName": "Platinum",
+      "relationshipManager": null,
+      "relationshipManagerPhone": null,
+      "memberSince": "2022-06-20",
+      "dateOfBirth": "1990-04-08",
+      "address": {
+        "street": "123 Main St, Apt 4B",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "USA"
+      },
+      "preferences": {
+        "biometricEnabled": true,
+        "twoFactorEnabled": true,
+        "notifications": {
+          "largePurchases": true,
+          "allPurchases": false,
+          "deposits": true,
+          "lowBalance": true,
+          "billReminders": true,
+          "budgetAlerts": true,
+          "loginAlerts": true,
+          "passwordChanges": true,
+          "suspicious": true
+        }
+      },
+      "lastLogin": "2026-05-03T09:45:00Z"
+    }
+  ],
+  "tiers": {
+    "standard": {
+      "name": "Standard",
+      "minBalance": 0,
+      "maxBalance": 49999,
+      "benefits": [
+        "Free checking account",
+        "Online and mobile banking",
+        "Debit card",
+        "ATM access"
+      ],
+      "fees": {
+        "monthlyMaintenance": 12,
+        "wireTransfer": 25,
+        "overdraft": 35
+      }
+    },
+    "premium": {
+      "name": "Premium",
+      "minBalance": 50000,
+      "maxBalance": 249999,
+      "benefits": [
+        "All Standard benefits",
+        "No monthly maintenance fees",
+        "Free wire transfers (domestic)",
+        "Premium customer service",
+        "Rewards credit card"
+      ],
+      "fees": {
+        "monthlyMaintenance": 0,
+        "wireTransfer": 0,
+        "overdraft": 0
+      }
+    },
+    "platinum": {
+      "name": "Platinum",
+      "minBalance": 250000,
+      "maxBalance": 999999,
+      "benefits": [
+        "All Premium benefits",
+        "Dedicated relationship manager",
+        "Free international wire transfers",
+        "Investment advisory services",
+        "Travel insurance",
+        "Airport lounge access"
+      ],
+      "fees": {
+        "monthlyMaintenance": 0,
+        "wireTransfer": 0,
+        "overdraft": 0
+      }
+    },
+    "private": {
+      "name": "Private Banking",
+      "minBalance": 1000000,
+      "maxBalance": 9999999,
+      "benefits": [
+        "All Platinum benefits",
+        "Private wealth management",
+        "Concierge services",
+        "Exclusive investment opportunities",
+        "Trust and estate planning",
+        "Tax optimization strategies",
+        "Priority customer service 24/7"
+      ],
+      "fees": {
+        "monthlyMaintenance": 0,
+        "wireTransfer": 0,
+        "overdraft": 0
+      }
+    },
+    "ultra_high_net_worth": {
+      "name": "Ultra High Net Worth",
+      "minBalance": 10000000,
+      "maxBalance": null,
+      "benefits": [
+        "All Private Banking benefits",
+        "Dedicated wealth management team",
+        "Family office services",
+        "Global investment access",
+        "Art and collectibles financing",
+        "Yacht and aircraft financing",
+        "Philanthropic advisory",
+        "Multi-generational wealth planning",
+        "Custom banking solutions"
+      ],
+      "fees": {
+        "monthlyMaintenance": 0,
+        "wireTransfer": 0,
+        "overdraft": 0
+      }
+    }
+  }
+}
