@@ -97,8 +97,10 @@ export default function LoginPage({ onLogin }) {
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-[#121217] opacity-50 blur-[100px]"></div>
         
         <div className="relative z-10 flex items-center gap-3 mb-8">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-[#cca858] to-[#e6cc80] flex items-center justify-center shadow-lg shadow-[#cca858]/20">
-            <Shield className="h-6 w-6 text-[#121217]" />
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#e6cc80] via-[#cca858] to-[#997a3d] p-[1px] shadow-lg shadow-[#cca858]/20">
+            <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-gradient-to-br from-[#1a1a20] to-[#121217]">
+              <span className="font-serif text-2xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[#e6cc80] to-[#cca858]">GL</span>
+            </div>
           </div>
           <span className="text-3xl font-light text-white tracking-wider uppercase">GoldLink<span className="font-semibold text-[#cca858]">Bank</span></span>
         </div>
@@ -134,8 +136,10 @@ export default function LoginPage({ onLogin }) {
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative bg-[#0a0a0c]">
         {/* Mobile Logo */}
         <div className="absolute top-6 left-6 md:hidden flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-[#cca858] to-[#e6cc80] flex items-center justify-center">
-            <Shield className="h-4 w-4 text-[#121217]" />
+          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#e6cc80] via-[#cca858] to-[#997a3d] p-[1px] shadow-sm shadow-[#cca858]/20">
+            <div className="flex h-full w-full items-center justify-center rounded-[7px] bg-gradient-to-br from-[#1a1a20] to-[#121217]">
+              <span className="font-serif text-sm font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[#e6cc80] to-[#cca858]">GL</span>
+            </div>
           </div>
           <span className="text-xl font-light text-white tracking-wider">GoldLink</span>
         </div>

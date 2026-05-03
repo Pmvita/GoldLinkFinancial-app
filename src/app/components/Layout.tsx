@@ -36,8 +36,10 @@ export default function Layout({ children, user, onLogout }) {
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-[#121217] border-r border-[#27272a] sticky top-0 h-screen overflow-y-auto">
         <div className="p-6 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-gradient-to-tr from-[#cca858] to-[#e6cc80] flex items-center justify-center">
-            <Shield className="h-5 w-5 text-[#121217]" />
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#e6cc80] via-[#cca858] to-[#997a3d] p-[1px] shadow-lg shadow-[#cca858]/20">
+            <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-gradient-to-br from-[#1a1a20] to-[#121217]">
+              <span className="font-serif text-xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[#e6cc80] to-[#cca858]">GL</span>
+            </div>
           </div>
           <span className="text-xl font-light tracking-wider">GoldLink<span className="font-medium text-[#cca858]">Bank</span></span>
         </div>
@@ -48,8 +50,8 @@ export default function Layout({ children, user, onLogout }) {
               <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.name || 'Valued Client'}</p>
-              <p className="text-xs text-[#cca858] truncate uppercase tracking-widest">{user?.tier || 'Private Wealth'}</p>
+              <p className="text-sm font-medium text-white truncate">{user?.fullName || user?.name || 'Valued Client'}</p>
+              <p className="text-xs text-[#cca858] truncate uppercase tracking-widest">{user?.tierName || user?.tier || 'Private Wealth'}</p>
             </div>
           </div>
         </div>
@@ -91,8 +93,10 @@ export default function Layout({ children, user, onLogout }) {
       <header className="md:hidden bg-[#121217] border-b border-[#27272a] sticky top-0 z-40">
         <div className="px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-[#cca858] to-[#e6cc80] flex items-center justify-center">
-              <Shield className="h-4 w-4 text-[#121217]" />
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#e6cc80] via-[#cca858] to-[#997a3d] p-[1px] shadow-sm shadow-[#cca858]/20">
+              <div className="flex h-full w-full items-center justify-center rounded-[7px] bg-gradient-to-br from-[#1a1a20] to-[#121217]">
+                <span className="font-serif text-sm font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[#e6cc80] to-[#cca858]">GL</span>
+              </div>
             </div>
             <span className="text-lg font-light tracking-wider">GoldLink</span>
           </div>
@@ -111,8 +115,8 @@ export default function Layout({ children, user, onLogout }) {
                 <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
               </div>
               <div>
-                <p className="text-base font-medium text-white">{user?.name || 'Valued Client'}</p>
-                <p className="text-sm text-[#cca858] uppercase tracking-widest">{user?.tier || 'Private Wealth'}</p>
+                <p className="text-base font-medium text-white">{user?.fullName || user?.name || 'Valued Client'}</p>
+                <p className="text-sm text-[#cca858] uppercase tracking-widest">{user?.tierName || user?.tier || 'Private Wealth'}</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>

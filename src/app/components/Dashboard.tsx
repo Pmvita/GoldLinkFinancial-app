@@ -82,7 +82,12 @@ export default function Dashboard({ user, onLogout }) {
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Good evening, <span className="font-medium text-[#cca858]">{user?.name?.split(' ')[0] || 'Client'}</span></h1>
+            <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Good {(() => {
+              const hour = new Date().getHours();
+              if (hour >= 5 && hour < 12) return 'morning';
+              if (hour >= 12 && hour < 17) return 'afternoon';
+              return 'evening';
+            })()}, <span className="font-medium text-[#cca858]">{user?.name?.split(' ')[0] || 'Client'}</span></h1>
             <p className="text-gray-400">Here is your private wealth overview.</p>
           </div>
           {userTier && (
