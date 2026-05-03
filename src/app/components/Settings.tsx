@@ -21,20 +21,20 @@ export default function Settings({ user, onLogout }) {
         </div>
 
         <Tabs defaultValue="profile">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="profile">
+          <TabsList className="flex w-full flex-col sm:flex-row h-auto gap-2 bg-transparent p-0 mb-6">
+            <TabsTrigger value="profile" className="w-full sm:flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm border rounded-lg py-3">
               <User className="h-4 w-4 mr-2" />
               Profile
             </TabsTrigger>
-            <TabsTrigger value="security">
+            <TabsTrigger value="security" className="w-full sm:flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm border rounded-lg py-3">
               <Lock className="h-4 w-4 mr-2" />
               Security
             </TabsTrigger>
-            <TabsTrigger value="notifications">
+            <TabsTrigger value="notifications" className="w-full sm:flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm border rounded-lg py-3">
               <Bell className="h-4 w-4 mr-2" />
               Notifications
             </TabsTrigger>
-            <TabsTrigger value="privacy">
+            <TabsTrigger value="privacy" className="w-full sm:flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm border rounded-lg py-3">
               <Shield className="h-4 w-4 mr-2" />
               Privacy
             </TabsTrigger>

@@ -256,18 +256,18 @@ export default function MobileDeposit({ user, onLogout }) {
           <CardContent>
             <div className="space-y-3">
               {recentDeposits.map((deposit) => (
-                <div key={deposit.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <ImageIcon className="h-5 w-5 text-green-600" />
+                <div key={deposit.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <ImageIcon className="h-5 w-5 text-green-600 flex-shrink-0" />
                     </div>
-                    <div>
-                      <div className="font-medium">${deposit.amount.toFixed(2)}</div>
-                      <div className="text-sm text-gray-500">{deposit.account} • {deposit.date}</div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-gray-900 truncate">${deposit.amount.toFixed(2)}</div>
+                      <div className="text-sm text-gray-500 truncate">{deposit.account} • {deposit.date}</div>
                     </div>
                   </div>
-                  <div className="text-sm">
-                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
+                  <div className="text-sm flex-shrink-0">
+                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded whitespace-nowrap">
                       {deposit.status}
                     </span>
                   </div>

@@ -6,37 +6,37 @@ import { Label } from './ui/label';
 import { Progress } from './ui/progress';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { Plus, Target, TrendingUp, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-
-const budgetCategories = [
-  { name: 'Groceries', budget: 600, spent: 452.30, color: '#3b82f6' },
-  { name: 'Dining Out', budget: 300, spent: 287.50, color: '#8b5cf6' },
-  { name: 'Transportation', budget: 250, spent: 198.75, color: '#10b981' },
-  { name: 'Entertainment', budget: 200, spent: 156.00, color: '#f59e0b' },
-  { name: 'Shopping', budget: 400, spent: 523.45, color: '#ef4444' },
-  { name: 'Utilities', budget: 350, spent: 315.20, color: '#06b6d4' },
-];
-
-const savingsGoals = [
-  { id: 1, name: 'Emergency Fund', target: 10000, current: 6500, color: '#3b82f6' },
-  { id: 2, name: 'Vacation', target: 3000, current: 1850, color: '#8b5cf6' },
-  { id: 3, name: 'New Car', target: 25000, current: 8200, color: '#10b981' },
-];
-
-const spendingTrends = [
-  { month: 'Dec', amount: 3245 },
-  { month: 'Jan', amount: 2890 },
-  { month: 'Feb', amount: 3567 },
-  { month: 'Mar', amount: 2978 },
-  { month: 'Apr', amount: 3421 },
-  { month: 'May', amount: 1933 },
-];
+import budgetsData from '../../../db/budgets.json';
 
 export default function Budgeting({ user, onLogout }) {
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const [userBudget, setUserBudget] = useState(null);
 
-  const totalBudget = budgetCategories.reduce((sum, cat) => sum + cat.budget, 0);
+  useEffect(() => {
+    const budget = budgetsData.budgets.find(b => b.userId === user.id);
+    setUserBudget(budget);
+  }, [user]);
+
+  if (!userBudget) {
+    return (
+      <Layout user={user} onLogout={onLogout}>
+        <div className="space-y-6">
+          <h1 className="text-3xl font-semibold">Budgeting & Goals</h1>
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-500">No budget data available</p>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+
+  const budgetCategories = userBudget.categories || [];
+  const savingsGoals = userBudget.savingsGoals || [];
+  const totalBudget = userBudget.monthlyBudget;
   const totalSpent = budgetCategories.reduce((sum, cat) => sum + cat.spent, 0);
 
   const pieData = budgetCategories.map(cat => ({
@@ -44,6 +44,16 @@ export default function Budgeting({ user, onLogout }) {
     value: cat.spent,
     color: cat.color,
   }));
+
+  // Mock spending trends
+  const spendingTrends = [
+    { month: 'Dec', amount: totalSpent * 0.95 },
+    { month: 'Jan', amount: totalSpent * 0.88 },
+    { month: 'Feb', amount: totalSpent * 1.05 },
+    { month: 'Mar', amount: totalSpent * 0.92 },
+    { month: 'Apr', amount: totalSpent * 1.02 },
+    { month: 'May', amount: totalSpent },
+  ];
 
   const handleAddGoal = (e) => {
     e.preventDefault();
@@ -97,18 +107,18 @@ export default function Budgeting({ user, onLogout }) {
                 const isOverBudget = percentage > 100;
                 return (
                   <div key={category.name} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2 min-w-0">
                         <div
-                          className="w-3 h-3 rounded-full"
+                          className="w-3 h-3 rounded-full flex-shrink-0"
                           style={{ backgroundColor: category.color }}
                         />
-                        <span className="font-medium">{category.name}</span>
+                        <span className="font-medium truncate">{category.name}</span>
                         {isOverBudget && (
-                          <AlertCircle className="h-4 w-4 text-red-500" />
+                          <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
                         )}
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex-shrink-0">
                         <span className={`font-semibold ${isOverBudget ? 'text-red-600' : ''}`}>
                           ${category.spent.toFixed(2)}
                         </span>
@@ -217,26 +227,26 @@ export default function Budgeting({ user, onLogout }) {
               const percentage = (goal.current / goal.target) * 100;
               return (
                 <div key={goal.id} className="p-4 border rounded-lg">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className="h-10 w-10 rounded-full flex items-center justify-center"
+                        className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: `${goal.color}20` }}
                       >
-                        <Target className="h-5 w-5" style={{ color: goal.color }} />
+                        <Target className="h-5 w-5 flex-shrink-0" style={{ color: goal.color }} />
                       </div>
-                      <div>
-                        <div className="font-semibold">{goal.name}</div>
-                        <div className="text-sm text-gray-500">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 truncate">{goal.name}</div>
+                        <div className="text-sm text-gray-500 truncate">
                           ${goal.current.toLocaleString()} of ${goal.target.toLocaleString()}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="sm:text-right flex-shrink-0">
                       <div className="text-sm text-gray-500">
                         {percentage.toFixed(1)}% complete
                       </div>
-                      <div className="text-sm font-medium">
+                      <div className="text-sm font-medium text-gray-900">
                         ${(goal.target - goal.current).toLocaleString()} to go
                       </div>
                     </div>

@@ -8,30 +8,30 @@ import { Switch } from './ui/switch';
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Plus, Calendar as CalendarIcon, Trash2, Edit } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-
-const accounts = [
-  { id: 1, name: 'Checking Account', balance: 12458.32, number: '****4521' },
-  { id: 2, name: 'Savings Account', balance: 45230.85, number: '****7832' },
-];
-
-const mockPayees = [
-  { id: 1, name: 'Electric Company', accountNumber: '****1234', category: 'Utilities', nextDue: '2026-05-15', amount: 145.32, recurring: true },
-  { id: 2, name: 'Internet Provider', accountNumber: '****5678', category: 'Utilities', nextDue: '2026-05-10', amount: 89.99, recurring: true },
-  { id: 3, name: 'Credit Card Payment', accountNumber: '****3421', category: 'Finance', nextDue: '2026-05-20', amount: 250.00, recurring: true },
-  { id: 4, name: 'Gym Membership', accountNumber: '****9012', category: 'Health', nextDue: '2026-05-05', amount: 45.00, recurring: true },
-];
+import accountsData from '../../../db/accounts.json';
+import payeesData from '../../../db/payees.json';
 
 export default function BillPay({ user, onLogout }) {
   const [showAddPayee, setShowAddPayee] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState('');
   const [paymentDate, setPaymentDate] = useState(new Date());
   const [isRecurring, setIsRecurring] = useState(false);
+  const [userAccounts, setUserAccounts] = useState([]);
+  const [userPayees, setUserPayees] = useState([]);
+
+  useEffect(() => {
+    const accounts = accountsData.accounts.filter(acc => acc.userId === user.id);
+    setUserAccounts(accounts);
+
+    const payees = payeesData.payees.filter(p => p.userId === user.id);
+    setUserPayees(payees);
+  }, [user]);
 
   const handlePayNow = (payee) => {
-    toast.success(`Payment of $${payee.amount} scheduled for ${payee.name}`);
+    toast.success(`Payment of $${payee.defaultAmount} scheduled for ${payee.name}`);
   };
 
   const handleAddPayee = (e) => {
@@ -107,11 +107,12 @@ export default function BillPay({ user, onLogout }) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {mockPayees
-                .sort((a, b) => new Date(a.nextDue).getTime() - new Date(b.nextDue).getTime())
+              {userPayees
+                .sort((a, b) => new Date(a.recurringPayment?.nextDue || '9999-12-31').getTime() - new Date(b.recurringPayment?.nextDue || '9999-12-31').getTime())
                 .map((payee) => {
+                  const nextDue = payee.recurringPayment?.nextDue || '2026-05-15';
                   const daysUntilDue = Math.ceil(
-                    (new Date(payee.nextDue).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                    (new Date(nextDue).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
                   );
                   const isOverdue = daysUntilDue < 0;
                   const isDueSoon = daysUntilDue <= 3 && daysUntilDue >= 0;
@@ -127,35 +128,35 @@ export default function BillPay({ user, onLogout }) {
                           : 'border-gray-200 bg-white'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold">{payee.name}</h3>
-                            {payee.recurring && (
-                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                            <h3 className="font-semibold text-gray-900 truncate">{payee.name}</h3>
+                            {payee.recurringPayment?.enabled && (
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded flex-shrink-0">
                                 Recurring
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span>{payee.category}</span>
-                            <span>•</span>
-                            <span>{payee.accountNumber}</span>
-                            <span>•</span>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 capitalize">
+                            <span className="truncate">{payee.category.replace('_', ' ')}</span>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="truncate">{payee.accountNumber}</span>
+                            <span className="hidden sm:inline">•</span>
                             <span className={isOverdue ? 'text-red-600 font-medium' : isDueSoon ? 'text-yellow-700 font-medium' : ''}>
-                              Due {payee.nextDue} ({daysUntilDue > 0 ? `${daysUntilDue} days` : isOverdue ? 'Overdue' : 'Today'})
+                              Due {nextDue} ({daysUntilDue > 0 ? `${daysUntilDue} days` : isOverdue ? 'Overdue' : 'Today'})
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right mr-4">
-                            <div className="text-2xl font-semibold">${payee.amount.toFixed(2)}</div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="text-right sm:mr-4 flex-1 sm:flex-none">
+                            <div className="text-2xl font-bold text-gray-900">${payee.defaultAmount.toFixed(2)}</div>
                           </div>
-                          <Button onClick={() => handlePayNow(payee)}>Pay Now</Button>
-                          <Button variant="outline" size="icon">
+                          <Button onClick={() => handlePayNow(payee)} className="flex-1 sm:flex-none">Pay Now</Button>
+                          <Button variant="outline" size="icon" className="flex-shrink-0">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="icon">
+                          <Button variant="outline" size="icon" className="flex-shrink-0">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -182,9 +183,9 @@ export default function BillPay({ user, onLogout }) {
                       <SelectValue placeholder="Select account" />
                     </SelectTrigger>
                     <SelectContent>
-                      {accounts.map((account) => (
-                        <SelectItem key={account.id} value={String(account.id)}>
-                          {account.name} ({account.number}) - ${account.balance.toLocaleString()}
+                      {userAccounts.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.name} (••••{account.accountNumber.slice(-4)}) - ${account.balance.toLocaleString()}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -197,7 +198,7 @@ export default function BillPay({ user, onLogout }) {
                       <SelectValue placeholder="Select payee" />
                     </SelectTrigger>
                     <SelectContent>
-                      {mockPayees.map((payee) => (
+                      {userPayees.map((payee) => (
                         <SelectItem key={payee.id} value={String(payee.id)}>
                           {payee.name}
                         </SelectItem>

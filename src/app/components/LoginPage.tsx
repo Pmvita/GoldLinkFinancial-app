@@ -6,33 +6,44 @@ import { Label } from './ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from './ui/input-otp';
 import { Shield, Fingerprint, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import usersData from '../../../db/users.json';
 
 export default function LoginPage({ onLogin }) {
   const [step, setStep] = useState('credentials');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
+  const [pendingUser, setPendingUser] = useState(null);
   const [biometricEnabled, setBiometricEnabled] = useState(true);
 
   const handleCredentialsSubmit = (e) => {
     e.preventDefault();
-    if (username && password) {
+    if (!username || !password) {
+      toast.error('Please enter username and password');
+      return;
+    }
+
+    // Authenticate against database
+    const user = usersData.users.find(
+      u => u.username === username && u.password === password
+    );
+
+    if (user) {
+      setPendingUser(user);
       toast.success('Credentials verified');
       setStep('2fa');
     } else {
-      toast.error('Please enter username and password');
+      toast.error('Invalid username or password');
     }
   };
 
   const handleBiometric = () => {
-    toast.success('Biometric authentication successful');
-    setTimeout(() => {
-      onLogin({
-        name: 'John Smith',
-        username: username || 'demo@bank.com',
-        lastLogin: new Date().toISOString(),
-      });
-    }, 500);
+    if (pendingUser) {
+      toast.success('Biometric authentication successful');
+      setTimeout(() => {
+        onLogin(pendingUser);
+      }, 500);
+    }
   };
 
   const handleOtpSubmit = (e) => {
@@ -40,11 +51,7 @@ export default function LoginPage({ onLogin }) {
     if (otp.length === 6) {
       toast.success('2FA verified successfully');
       setTimeout(() => {
-        onLogin({
-          name: 'John Smith',
-          username: username || 'demo@bank.com',
-          lastLogin: new Date().toISOString(),
-        });
+        onLogin(pendingUser);
       }, 500);
     } else {
       toast.error('Please enter valid 6-digit code');
@@ -59,7 +66,7 @@ export default function LoginPage({ onLogin }) {
             <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
               <Shield className="h-6 w-6 text-white" />
             </div>
-            <CardTitle className="text-2xl">SecureBank</CardTitle>
+            <CardTitle className="text-2xl">GoldLink Bank</CardTitle>
           </div>
           <CardDescription>
             {step === 'credentials'
@@ -95,9 +102,7 @@ export default function LoginPage({ onLogin }) {
               <Button type="submit" className="w-full">
                 Continue
               </Button>
-              <div className="text-center text-sm text-gray-500">
-                Demo: Use any credentials to login
-              </div>
+
             </form>
           ) : (
             <div className="space-y-4">

@@ -53,7 +53,7 @@ export default function Layout({ children, user, onLogout }) {
               <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
                 <Shield className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-semibold">SecureBank</span>
+              <span className="text-xl font-semibold">GoldLink Bank</span>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
@@ -107,7 +107,7 @@ export default function Layout({ children, user, onLogout }) {
                       <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
                         <Shield className="h-5 w-5 text-white" />
                       </div>
-                      <span className="font-semibold">SecureBank</span>
+                      <span className="font-semibold">GoldLink Bank</span>
                     </div>
                     <Button
                       variant="ghost"

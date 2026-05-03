@@ -6,13 +6,9 @@ import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ArrowLeftRight, Send, Building2, User } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-
-const accounts = [
-  { id: 1, name: 'Checking Account', balance: 12458.32, number: '****4521' },
-  { id: 2, name: 'Savings Account', balance: 45230.85, number: '****7832' },
-];
+import accountsData from '../../../db/accounts.json';
 
 const recentRecipients = [
   { id: 1, name: 'Jane Doe', email: 'jane@example.com', type: 'P2P' },
@@ -24,6 +20,12 @@ export default function Transfers({ user, onLogout }) {
   const [fromAccount, setFromAccount] = useState('');
   const [amount, setAmount] = useState('');
   const [transferType, setTransferType] = useState('internal');
+  const [userAccounts, setUserAccounts] = useState([]);
+
+  useEffect(() => {
+    const accounts = accountsData.accounts.filter(acc => acc.userId === user.id);
+    setUserAccounts(accounts);
+  }, [user]);
 
   const handleTransfer = (e) => {
     e.preventDefault();
@@ -43,16 +45,16 @@ export default function Transfers({ user, onLogout }) {
         </div>
 
         <Tabs defaultValue="internal" onValueChange={setTransferType}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="internal">
+          <TabsList className="flex w-full flex-col sm:flex-row h-auto gap-2 bg-transparent p-0 mb-6">
+            <TabsTrigger value="internal" className="w-full sm:flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm border rounded-lg py-3">
               <ArrowLeftRight className="h-4 w-4 mr-2" />
               Internal
             </TabsTrigger>
-            <TabsTrigger value="p2p">
+            <TabsTrigger value="p2p" className="w-full sm:flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm border rounded-lg py-3">
               <User className="h-4 w-4 mr-2" />
               P2P Transfer
             </TabsTrigger>
-            <TabsTrigger value="wire">
+            <TabsTrigger value="wire" className="w-full sm:flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm border rounded-lg py-3">
               <Building2 className="h-4 w-4 mr-2" />
               Wire Transfer
             </TabsTrigger>
@@ -74,9 +76,9 @@ export default function Transfers({ user, onLogout }) {
                           <SelectValue placeholder="Select account" />
                         </SelectTrigger>
                         <SelectContent>
-                          {accounts.map((account) => (
-                            <SelectItem key={account.id} value={String(account.id)}>
-                              {account.name} ({account.number}) - ${account.balance.toLocaleString()}
+                          {userAccounts.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.name} (••••{account.accountNumber.slice(-4)}) - ${account.balance.toLocaleString()}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -89,9 +91,9 @@ export default function Transfers({ user, onLogout }) {
                           <SelectValue placeholder="Select account" />
                         </SelectTrigger>
                         <SelectContent>
-                          {accounts.map((account) => (
+                          {userAccounts.map((account) => (
                             <SelectItem key={account.id} value={String(account.id)}>
-                              {account.name} ({account.number})
+                              {account.name} (••••{account.accountNumber.slice(-4)})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -137,9 +139,9 @@ export default function Transfers({ user, onLogout }) {
                         <SelectValue placeholder="Select account" />
                       </SelectTrigger>
                       <SelectContent>
-                        {accounts.map((account) => (
+                        {userAccounts.map((account) => (
                           <SelectItem key={account.id} value={String(account.id)}>
-                            {account.name} ({account.number}) - ${account.balance.toLocaleString()}
+                            {account.name} (••••{account.accountNumber.slice(-4)}) - ${account.balance.toLocaleString()}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -207,9 +209,9 @@ export default function Transfers({ user, onLogout }) {
                         <SelectValue placeholder="Select account" />
                       </SelectTrigger>
                       <SelectContent>
-                        {accounts.map((account) => (
+                        {userAccounts.map((account) => (
                           <SelectItem key={account.id} value={String(account.id)}>
-                            {account.name} ({account.number}) - ${account.balance.toLocaleString()}
+                            {account.name} (••••{account.accountNumber.slice(-4)}) - ${account.balance.toLocaleString()}
                           </SelectItem>
                         ))}
                       </SelectContent>
