@@ -168,37 +168,44 @@ export default function Dashboard({ user, onLogout }) {
             <CardContent>
               <div className="h-[300px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={balanceData.length > 1 ? balanceData : [{id: 'fb1', displayDate:'Jan 1', balance: 12000000}, {id: 'fb2', displayDate:'Feb 1', balance: 12200000}, {id: 'fb3', displayDate:'Mar 1', balance: 12500450}]}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
-                    <XAxis 
-                      dataKey="displayDate" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fill: '#71717a', fontSize: 12}} 
-                      dy={10}
-                    />
-                    <YAxis 
-                      domain={[(dataMin) => dataMin === 0 ? 0 : dataMin * 0.95, (dataMax) => dataMax === 0 ? 100 : dataMax * 1.05]}
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fill: '#71717a', fontSize: 12}}
-                      tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
-                      dx={-10}
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#121217', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
-                      itemStyle={{ color: '#cca858' }}
-                      formatter={(value) => [formatCurrency(value), 'Balance']}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="balance" 
-                      stroke="#cca858" 
-                      strokeWidth={3}
-                      dot={{ fill: '#121217', stroke: '#cca858', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, fill: '#cca858' }}
-                    />
-                  </LineChart>
+                  {(() => {
+                    const chartData = balanceData.length > 1 ? balanceData : [{id: 'fb1', displayDate:'Jan 1', balance: 12000000}, {id: 'fb2', displayDate:'Feb 1', balance: 12200000}, {id: 'fb3', displayDate:'Mar 1', balance: 12500450}];
+                    return (
+                      <LineChart data={chartData} key={chartData.map(d => d.id).join('-')}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
+                        <XAxis 
+                          dataKey="id" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{fill: '#71717a', fontSize: 12}} 
+                          tickFormatter={(id) => chartData.find(d => d.id === id)?.displayDate || id}
+                          dy={10}
+                        />
+                        <YAxis 
+                          domain={[(dataMin) => dataMin === 0 ? 0 : dataMin * 0.95, (dataMax) => dataMax === 0 ? 100 : dataMax * 1.05]}
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{fill: '#71717a', fontSize: 12}}
+                          tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                          dx={-10}
+                        />
+                        <Tooltip 
+                          labelFormatter={(label) => chartData.find(d => d.id === label)?.displayDate || label}
+                          contentStyle={{ backgroundColor: '#121217', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
+                          itemStyle={{ color: '#cca858' }}
+                          formatter={(value) => [formatCurrency(value), 'Balance']}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="balance" 
+                          stroke="#cca858" 
+                          strokeWidth={3}
+                          dot={{ fill: '#121217', stroke: '#cca858', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, fill: '#cca858' }}
+                        />
+                      </LineChart>
+                    );
+                  })()}
                 </ResponsiveContainer>
               </div>
             </CardContent>
