@@ -8,8 +8,10 @@
 
 ## ✨ Features
 
+- **Presentation Splash Screen:** A striking entry experience featuring the bespoke "GL" monogram logo and a seamless loading animation to immerse the user immediately into the premium aesthetic.
 - **Exclusive Authentication Flow:** A seamlessly overhauled entry point featuring secure login, multi-factor authentication (2FA), and a bespoke "Request an Invitation" flow for prospective elite clients.
 - **Premium Dashboard:** A high-level, elegant overview of total net worth, liquid assets, and recent top-tier transactions.
+- **Fluid & Premium Animations:** Integration of `motion/react` throughout the application to provide high-quality staggered entrances, interactive hovers, and polished state transitions that elevate the perceived value.
 - **Comprehensive Wealth Management:**
   - **Accounts:** Granular insights into checking, savings, and investment accounts with advanced filtering.
   - **Transfers:** Frictionless domestic and international wire transfers designed for high-value transactions.
@@ -24,6 +26,7 @@
 - **Frontend Framework:** React 18 & TypeScript
 - **Styling:** Tailwind CSS v4
 - **UI Components:** [shadcn/ui](https://ui.shadcn.com/) (Accessible, customizable Radix primitives)
+- **Animation:** Motion (`motion/react`)
 - **Data Visualization:** Recharts
 - **Icons:** Lucide React
 - **Mock Database:** Local JSON persistence (`/db/` architecture)
@@ -31,8 +34,9 @@
 ## 🎨 Design System
 
 Following a recent comprehensive UI overhaul, GoldLink Bank's design language is rooted in exclusivity. The aesthetic relies heavily on:
+- **Bespoke Branding:** The "GL" monogram acts as a central visual anchor conveying legacy and modern trust.
 - **Deep Carbon (`#111111` to `#1A1A1A`):** For profound depth, reduced eye strain, and a modern, executive feel.
-- **Metallic Gold (`#D4AF37`, `#AA7C11`):** As the primary accent, conveying wealth, prestige, and trust.
+- **Metallic Gold (`#D4AF37`, `#cca858`):** As the primary accent, conveying wealth, prestige, and trust.
 - **Dynamic Layouts:** Liquid responsiveness guaranteeing that high-density financial data remains legible, beautifully aligned, and fully functional on any screen size.
 
 ## 🚀 Getting Started
