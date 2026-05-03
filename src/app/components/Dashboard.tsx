@@ -168,7 +168,7 @@ export default function Dashboard({ user, onLogout }) {
             <CardContent>
               <div className="h-[300px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={balanceData.length ? balanceData : [{id: 'fb1', displayDate:'Jan 1', balance: 12000000}, {id: 'fb2', displayDate:'Feb 1', balance: 12200000}, {id: 'fb3', displayDate:'Mar 1', balance: 12500450}]}>
+                  <LineChart data={balanceData.length > 1 ? balanceData : [{id: 'fb1', displayDate:'Jan 1', balance: 12000000}, {id: 'fb2', displayDate:'Feb 1', balance: 12200000}, {id: 'fb3', displayDate:'Mar 1', balance: 12500450}]}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
                     <XAxis 
                       dataKey="displayDate" 
