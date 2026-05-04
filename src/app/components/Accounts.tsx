@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Button } from './ui/button';
 import { ShieldCheck, Plus, ArrowUpRight, ArrowDownRight, CreditCard, Landmark, LineChart, MoreHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import accountsData from '../../../db/accounts.json';
 import transactionsData from '../../../db/transactions.json';
 
 export default function Accounts({ user, onLogout }) {
+  const navigate = useNavigate();
   const [userAccounts, setUserAccounts] = useState([]);
   const [userTransactions, setUserTransactions] = useState([]);
 
@@ -77,13 +79,16 @@ export default function Accounts({ user, onLogout }) {
             {userAccounts.map((account) => (
               <Card key={account.id} className="bg-[#121217] border-[#27272a] hover:border-[#cca858]/50 transition-all overflow-hidden group">
                 <CardContent className="p-0">
-                  <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#27272a]">
+                  <div 
+                    className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#27272a] cursor-pointer"
+                    onClick={() => navigate(`/accounts/${account.id}`)}
+                  >
                     <div className="flex items-center gap-5">
                       <div className="h-14 w-14 rounded-2xl bg-[#0a0a0c] border border-[#27272a] flex items-center justify-center group-hover:border-[#cca858]/30 transition-colors">
                         {getAccountIcon(account.type)}
                       </div>
                       <div>
-                        <h2 className="text-xl font-medium text-white">{account.name}</h2>
+                        <h2 className="text-xl font-medium text-white group-hover:text-[#cca858] transition-colors">{account.name}</h2>
                         <p className="text-gray-400 font-mono text-sm mt-1">{account.number}</p>
                       </div>
                     </div>
@@ -94,7 +99,7 @@ export default function Accounts({ user, onLogout }) {
                   </div>
                   <div className="bg-[#0a0a0c] px-6 py-4 flex items-center justify-between">
                     <div className="flex gap-2">
-                      <Button variant="ghost" className="text-gray-400 hover:text-white hover:bg-[#1a1a20] h-9 px-3 text-sm">
+                      <Button onClick={() => navigate('/transfers')} variant="ghost" className="text-gray-400 hover:text-white hover:bg-[#1a1a20] h-9 px-3 text-sm">
                         <ArrowUpRight className="h-4 w-4 mr-2" /> Transfer
                       </Button>
                       <Button variant="ghost" className="text-gray-400 hover:text-white hover:bg-[#1a1a20] h-9 px-3 text-sm">

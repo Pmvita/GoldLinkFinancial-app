@@ -10,6 +10,7 @@ import MobileDeposit from './components/MobileDeposit';
 import Cards from './components/Cards';
 import Budgeting from './components/Budgeting';
 import Settings from './components/Settings';
+import AccountDetail from './components/AccountDetail';
 import { SplashScreen } from './components/SplashScreen';
 import { Toaster } from './components/ui/sonner';
 
@@ -75,6 +76,16 @@ export default function App() {
           element={
             isAuthenticated ? (
               <Accounts user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/accounts/:accountId"
+          element={
+            isAuthenticated ? (
+              <AccountDetail user={user} onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" replace />
             )

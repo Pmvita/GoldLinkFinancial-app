@@ -47,8 +47,7 @@ export default function Dashboard({ user, onLogout }) {
       if (!seenDates.has(display)) {
         seenDates.add(display);
         grouped.push({
-          id: txn.id,
-          displayDate: display,
+          name: display,
           balance: currentBalance,
         });
       }
@@ -61,8 +60,7 @@ export default function Dashboard({ user, onLogout }) {
     // Fix for Recharts duplicate key error when rendering a single data point
     if (result.length === 1) {
       result.unshift({
-        id: result[0].id + '-prev',
-        displayDate: 'Prev',
+        name: 'Prev',
         balance: result[0].balance
       });
     }
@@ -171,20 +169,23 @@ export default function Dashboard({ user, onLogout }) {
               <div className="h-[300px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   {(() => {
-                    const chartData = balanceData.length > 1 ? balanceData : [{id: 'fb1', displayDate:'Jan 1', balance: 12000000}, {id: 'fb2', displayDate:'Feb 1', balance: 12200000}, {id: 'fb3', displayDate:'Mar 1', balance: 12500450}];
+                    const chartData = balanceData.length > 1 ? balanceData : [
+                      {name: 'Jan 1', balance: 12000000}, 
+                      {name: 'Feb 1', balance: 12200000}, 
+                      {name: 'Mar 1', balance: 12500450}
+                    ];
                     return (
-                      <LineChart data={chartData} key={chartData.map(d => d.id).join('-')}>
+                      <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
                         <XAxis 
-                          dataKey="id" 
+                          dataKey="name" 
                           axisLine={false} 
                           tickLine={false} 
                           tick={{fill: '#71717a', fontSize: 12}} 
-                          tickFormatter={(id) => chartData.find(d => d.id === id)?.displayDate || id}
                           dy={10}
                         />
                         <YAxis 
-                          domain={[(dataMin) => dataMin === 0 ? 0 : dataMin * 0.95, (dataMax) => dataMax === 0 ? 100 : dataMax * 1.05]}
+                          domain={['auto', 'auto']}
                           axisLine={false} 
                           tickLine={false} 
                           tick={{fill: '#71717a', fontSize: 12}}
@@ -192,7 +193,6 @@ export default function Dashboard({ user, onLogout }) {
                           dx={-10}
                         />
                         <Tooltip 
-                          labelFormatter={(label) => chartData.find(d => d.id === label)?.displayDate || label}
                           contentStyle={{ backgroundColor: '#121217', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
                           itemStyle={{ color: '#cca858' }}
                           formatter={(value) => [formatCurrency(value), 'Balance']}
