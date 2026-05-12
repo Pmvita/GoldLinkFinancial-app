@@ -1,5 +1,12 @@
 # 🏦 GoldLink Bank
 
+> **Monorepo:** This repository is a pnpm workspace.
+> - `apps/web` — the Vite + React web application (run with `pnpm dev` / `pnpm build` from the repo root, or `pnpm --filter web <script>`).
+> - `packages/core` — shared TypeScript package, currently a placeholder for code that will be reused by `apps/web` and the upcoming Expo mobile app.
+> - `db/` — local JSON mock backend, shared across apps.
+>
+> Run `pnpm install` at the repo root after cloning.
+
 ![GoldLink Bank](https://images.unsplash.com/photo-1634733988138-bf2c3a2a13fa?q=80&w=2070&auto=format&fit=crop)
 
 **GoldLink Bank** is a premium, full-stack banking application tailored specifically for Ultra High Net Worth Individuals (UHNWI). Built with a deep focus on design, security, and performance, GoldLink offers an exclusive, private banking aesthetic characterized by a sophisticated deep carbon and metallic gold color palette.

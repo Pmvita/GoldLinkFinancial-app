@@ -1,2 +1,14 @@
 packages:
-  - '.'
+  - apps/*
+  - packages/*
+allowBuilds:
+  '@tailwindcss/oxide': true
+  esbuild: true
+  unrs-resolver: true
+# Pin React typings to v18 across the monorepo so apps/web (React 18.3) does
+# not collide with Expo's React 19 transitive @types/react. apps/mobile uses
+# React 19 at runtime and may need follow-up work if it later adds a
+# `typecheck` script that depends on v19-only type features.
+overrides:
+  '@types/react': ^18.3.12
+  '@types/react-dom': ^18.3.1
