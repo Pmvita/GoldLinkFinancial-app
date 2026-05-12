@@ -27,6 +27,13 @@ A comprehensive private wealth and banking platform designed for high-net-worth 
 
 The GoldLink Bank database consists of six JSON files that power a full-featured private banking application. This database supports multi-tier wealth management, featuring everything from standard retail banking to ultra-high-net-worth family office services.
 
+The same files are consumed by both apps in the monorepo:
+
+- **`apps/web`** imports the JSON files directly (e.g. `import accountsData from '../../../../../db/accounts.json'`) and filters by `userId` in component-level effects.
+- **`apps/mobile`** reads through the typed accessors in [`@goldlink/core`](../packages/core/README.md) (`getAccountsForUser`, `getCardsForUser`, etc.), which in turn import these JSON files.
+
+Note: `payees.json` is currently used in two places — Bill Pay (as expected) **and** the web Transfers screen, where it doubles as the saved-recipient list for wires. That overlap is tracked as a follow-up; a real backend would split payees from transfer counterparties.
+
 **Key Features:**
 - ✅ Multi-tier customer segmentation (5 wealth tiers)
 - ✅ Comprehensive account management (Checking, Savings, Investment, Money Market)
@@ -547,36 +554,55 @@ Before deploying to production, implement:
 
 ## 🛠️ Integration Guide
 
-### Loading Data in Your Application
+There are two supported ways to read this data, depending on which app you're working in.
 
-```javascript
-// Example: Load user data
-import usersData from './db/users.json';
-import accountsData from './db/accounts.json';
-import transactionsData from './db/transactions.json';
+### Option 1 — typed accessors via `@goldlink/core` (preferred, used by `apps/mobile`)
 
-// Authenticate user
-function authenticateUser(username, password) {
-  const user = usersData.users.find(
-    u => u.username === username && u.password === password
+```ts
+import {
+  findUserByCredentials,
+  getAccountsForUser,
+  getTransactionsForAccount,
+  getCardsForUser,
+} from '@goldlink/core';
+
+const user = findUserByCredentials('pmvita', 'admin123');
+if (user) {
+  const accounts = getAccountsForUser(user.id);
+  const txns = getTransactionsForAccount(accounts[0].id);
+  const cards = getCardsForUser(user.id);
+}
+```
+
+The accessors are fully typed and pre-sort transactions by date. See [`packages/core/README.md`](../packages/core/README.md) for the full API surface.
+
+### Option 2 — direct JSON imports (current `apps/web` pattern)
+
+```ts
+import usersData from '@/../../../db/users.json'; // path varies by file depth
+import accountsData from '@/../../../db/accounts.json';
+import transactionsData from '@/../../../db/transactions.json';
+
+function authenticateUser(username: string, password: string) {
+  return (
+    usersData.users.find(
+      (u) => u.username === username && u.password === password
+    ) ?? null
   );
-  return user || null;
 }
 
-// Get user accounts
-function getUserAccounts(userId) {
-  return accountsData.accounts.filter(
-    acc => acc.userId === userId
-  );
+function getUserAccounts(userId: string) {
+  return accountsData.accounts.filter((acc) => acc.userId === userId);
 }
 
-// Get account transactions
-function getAccountTransactions(accountId) {
+function getAccountTransactions(accountId: string) {
   return transactionsData.transactions.filter(
-    txn => txn.accountId === accountId
+    (txn) => txn.accountId === accountId
   );
 }
 ```
+
+Web components today use this direct-import pattern. Migrating them onto `@goldlink/core` is a planned refactor.
 
 ---
 

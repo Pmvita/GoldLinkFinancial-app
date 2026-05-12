@@ -1,453 +1,300 @@
-# GoldLink Bank - Full-Stack Banking Application
+# GoldLink Bank — Feature & Implementation Guide
 
 ## 🏦 Overview
 
-**GoldLink Bank** is a comprehensive private wealth and banking platform featuring multi-tier customer segmentation from standard retail banking to ultra-high-net-worth family office services.
+**GoldLink Bank** is a multi-tier private wealth and banking prototype, available as a Vite-powered web SPA (`apps/web`) and an Expo Go mobile companion (`apps/mobile`). Both apps share a local JSON mock backend (`db/`) and the mobile app additionally consumes a shared TypeScript package (`@goldlink/core`).
+
+For setup, scripts, and known engineering caveats, see the [top-level README](README.md). This document focuses on **what the product currently does**, separating real behavior from simulated UI flows.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick start
 
-### Demo Login Credentials
+### Demo logins
 
-**Admin Account (Ultra High Net Worth)**
-```
-Username: pmvita
-Password: admin123
-```
+All credentials live in `db/users.json` and work on both the web and mobile login screens.
 
-**Additional Demo Accounts**
-```
-Sarah Johnson (Private Banking)
-Username: sarah.johnson@email.com
-Password: demo123
+| Tier              | Username / Email             | Password   |
+| ----------------- | ---------------------------- | ---------- |
+| Ultra High Net Worth | `pmvita`                  | `admin123` |
+| Private Banking   | `sarah.johnson@email.com`    | `demo123`  |
+| Platinum          | `demo@bank.com`              | `demo123`  |
 
-John Smith (Platinum)
-Username: demo@bank.com
-Password: demo123
-```
+Plain-text passwords are intentional — see the [security note](#-security-features-demo-only).
 
----
+### Run
 
-## 💎 User Tiers
+```bash
+# Web SPA
+pnpm dev            # from repo root
 
-### 1. Ultra High Net Worth (UHNWI) 👑
-**Balance Required:** $10,000,000+
-
-**Pierre Mvita's Portfolio:**
-- Private Wealth Checking: $2,847,563.42
-- High-Yield Savings: $8,456,982.18
-- Portfolio Investment: $24,567,890.55
-- Money Market: $5,234,567.89
-- **Total Assets: $41,107,004.04**
-
-**Exclusive Benefits:**
-- Dedicated wealth management team (3-5 specialists)
-- Family office services
-- Global investment access (hedge funds, private equity)
-- Art and collectibles financing
-- Yacht and aircraft financing
-- Multi-generational wealth planning
-- Philanthropic foundation support
-- Custom banking solutions
-- Private jet partnerships
-- Real estate investment advisory
-
-**Relationship Manager:** Victoria Sterling  
-**Member Since:** March 15, 2018
-
----
-
-### 2. Private Banking 💼
-**Balance Required:** $1,000,000 - $9,999,999
-
-**Sarah Johnson's Portfolio:**
-- Private Banking Checking: $456,789.32
-- Private Savings: $1,234,567.85
-- **Total Assets: $1,691,357.17**
-
-**Benefits:**
-- Private wealth management team
-- White-glove concierge services
-- Exclusive investment opportunities
-- Trust and estate planning
-- Tax optimization strategies
-- Priority 24/7 customer service
-
-**Relationship Manager:** Michael Chen
-
----
-
-### 3. Platinum 🥇
-**Balance Required:** $250,000 - $999,999
-
-**John Smith's Portfolio:**
-- Platinum Checking: $342,458.32
-- Platinum Savings: $567,230.85
-- **Total Assets: $909,689.17**
-
-**Benefits:**
-- Dedicated relationship manager
-- Free international wire transfers
-- Investment advisory services
-- Travel insurance
-- Airport lounge access
-- Exclusive rates on loans
-
----
-
-## 🎯 Core Features
-
-### 1. Authentication & Security
-- ✅ Multi-factor authentication (2FA)
-- ✅ Biometric login simulation
-- ✅ OTP verification
-- ✅ Session management
-- ✅ Device registration
-- ✅ Automatic timeouts
-
-### 2. Dashboard
-- ✅ Portfolio overview with total balance
-- ✅ Multiple account summaries
-- ✅ Balance trend charts
-- ✅ Spending analytics
-- ✅ Recent transactions
-- ✅ Tier-specific benefits display
-
-### 3. Account Management
-- ✅ Multiple account types (Checking, Savings, Investment, Money Market)
-- ✅ Detailed transaction history
-- ✅ Search and filter transactions
-- ✅ Account statements
-- ✅ Interest rate displays
-
-### 4. Money Transfers
-- ✅ Internal transfers between accounts
-- ✅ P2P transfers (email/phone)
-- ✅ Wire transfers (domestic & international)
-- ✅ Recent recipients
-- ✅ Transfer scheduling
-
-### 5. Bill Pay
-- ✅ Payee management
-- ✅ Recurring payments (weekly, monthly, quarterly)
-- ✅ Payment scheduling
-- ✅ Due date tracking
-- ✅ Payment history
-
-### 6. Mobile Check Deposit
-- ✅ Photo upload simulation
-- ✅ Front and back check capture
-- ✅ OCR processing progress
-- ✅ Deposit history
-- ✅ Availability timeline
-
-### 7. Card Management
-- ✅ Credit and debit card overview
-- ✅ Card freeze/unfreeze
-- ✅ PIN change
-- ✅ Lost/stolen reporting
-- ✅ Rewards points tracking
-- ✅ Credit limit and available credit
-
-### 8. Budgeting & Goals
-- ✅ Category-based budgeting
-- ✅ Spending visualization (pie & bar charts)
-- ✅ Savings goals tracking
-- ✅ Progress indicators
-- ✅ Over-budget alerts
-
-### 9. Settings
-- ✅ Profile management
-- ✅ Password change
-- ✅ 2FA configuration
-- ✅ Biometric settings
-- ✅ Notification preferences
-- ✅ Active session management
-- ✅ Privacy controls
-
----
-
-## 📊 Database Structure
-
-### Files Located in `/db/`
-
-1. **users.json** - User profiles, authentication, tier classification
-2. **accounts.json** - Bank accounts, balances, interest rates
-3. **cards.json** - Credit/debit cards, limits, rewards
-4. **transactions.json** - Complete transaction history
-5. **payees.json** - Bill pay recipients, recurring schedules
-6. **budgets.json** - Budget categories, savings goals
-
-### Data Relationships
-
-```
-users.json (id: USR-001)
-    ↓
-    ├─→ accounts.json (userId: USR-001)
-    │       ├─→ ACC-001-CHK (Checking)
-    │       ├─→ ACC-001-SAV (Savings)
-    │       ├─→ ACC-001-INV (Investment)
-    │       └─→ ACC-001-MM (Money Market)
-    │
-    ├─→ cards.json (userId: USR-001)
-    │       ├─→ CRD-001-001 (Visa Infinite)
-    │       ├─→ CRD-001-002 (Debit)
-    │       └─→ CRD-001-003 (Savings Debit)
-    │
-    ├─→ transactions.json (userId: USR-001)
-    ├─→ payees.json (userId: USR-001)
-    └─→ budgets.json (userId: USR-001)
+# Mobile app
+cd apps/mobile && pnpm start
+# Scan the QR code with the Expo Go app on your iOS or Android device.
 ```
 
 ---
 
-## 🎨 Branding & Design
+## 💎 User tiers
 
-### Color Scheme
+`db/users.json` ships with three pre-built users that map onto three of the five tiers defined in the file. The remaining two tiers (Standard, Premium) are defined in the `tiers` metadata block but have no demo user assigned.
 
-**Primary Colors:**
-- Primary Blue: `#2563eb` (from-blue-600)
-- Secondary Indigo: `#4f46e5` (to-indigo-700)
+### Ultra High Net Worth (UHNWI) 👑 — `pmvita`
 
-**Tier Colors:**
-- Ultra High Net Worth: Gradient amber/gold `from-amber-400 to-yellow-500`
-- Private Banking: Gradient purple `from-purple-600 to-indigo-600`
-- Platinum: Gradient gray `from-gray-400 to-gray-500`
+**Required balance:** $10,000,000+ · **Relationship manager:** Victoria Sterling · **Member since:** March 15, 2018
 
-**Status Colors:**
-- Success/Credit: `text-green-600`
-- Debit/Expense: `text-gray-900`
-- Warning: `text-yellow-700`
-- Error: `text-red-600`
+**Portfolio:**
+
+| Account                       | Balance         | Rate         |
+| ----------------------------- | --------------- | ------------ |
+| Private Wealth Checking       | $2,847,563.42   | 1.75% APY    |
+| High-Yield Savings            | $8,456,982.18   | 4.25% APY    |
+| Portfolio Investment          | $24,567,890.55  | Market rate  |
+| Money Market                  | $5,234,567.89   | 3.85% APY    |
+| **Total**                     | **$41,107,004.04** | —         |
+
+**Listed UHNWI benefits** (rendered in the web tier card; tier metadata also lives in `db/users.json`): dedicated wealth team, family office services, global investment access, art/yacht/aircraft financing, multi-generational planning, philanthropic support, custom banking, private jet partnerships, real-estate advisory.
+
+### Private Banking 💼 — Sarah Johnson
+
+**Required balance:** $1M–$9.99M · **RM:** Michael Chen · **Total assets:** $1,691,357.17 across Private Banking Checking and Private Savings · **Cards:** Mastercard World Elite ($150k limit) + Private Banking Debit.
+
+### Platinum 🥇 — John Smith
+
+**Required balance:** $250k–$999k · **Total assets:** $909,689.17 across Platinum Checking and Platinum Savings · **Cards:** Visa Signature ($50k) + Platinum Checking Debit.
+
+---
+
+## 🎯 Feature matrix
+
+Legend: ✅ Implemented · 🧪 Simulated demo flow · 🖼️ UI-only (no real behavior) · 🚧 Placeholder · ➖ Not in this app
+
+| Feature                       | Web (`apps/web`)        | Mobile (`apps/mobile`)    |
+| ----------------------------- | ----------------------- | ------------------------- |
+| Splash screen                 | ✅                      | ✅ (session check)        |
+| Username/password login       | ✅ (validates `db/users.json`) | ✅ (validates via `@goldlink/core`) |
+| 2FA OTP step                  | 🖼️ (any 6 digits pass)  | ➖                        |
+| Biometric login               | 🖼️ (button only)        | ➖                        |
+| Sign-up / "Request invitation" | 🧪 (creates ephemeral in-memory user; never persisted) | ➖ |
+| Persistent session            | 🖼️ (local React state)  | ✅ (`expo-secure-store`)  |
+| Dashboard / balance hero      | ✅                      | ✅                        |
+| Tier badge & RM info          | ✅                      | ✅ (tier badge; RM on `more`) |
+| Balance trend chart           | ✅ (derived from txns)  | ➖                        |
+| Spending analytics            | ✅                      | ➖                        |
+| Recent transactions           | ✅                      | ✅                        |
+| Accounts list                 | ✅                      | ✅                        |
+| Account detail + history      | ✅                      | ✅                        |
+| Account number masking        | ✅                      | ✅ (`maskAccountNumber`)  |
+| Card list                     | ✅ (per-user JSON)      | ✅                        |
+| Card freeze / change PIN      | 🖼️                      | ➖                        |
+| Card-specific recent activity | ✅                      | ➖                        |
+| Internal / domestic / international transfers | 🧪 (form → 1.5s spinner → success screen; nothing written) | 🚧 (placeholder screen) |
+| Saved recipients              | ✅ reads (uses `db/payees.json` as recipients — see [caveat](#-known-data-model-gaps)) | ➖ |
+| Bill Pay payee list           | ✅ (per-user JSON)      | 🚧 (placeholder)          |
+| Bill Pay "Pay Now"            | 🖼️                      | ➖                        |
+| Recurring payment schedules   | ✅ (read from JSON)     | ➖                        |
+| Mobile check deposit          | 🧪 (form → 2s spinner → success; no upload, no OCR) | 🚧 (placeholder) |
+| Budgeting categories          | ✅ (per-user JSON, Recharts pie + bars) | 🚧 (placeholder) |
+| Savings goals                 | ✅ (read from JSON)     | ➖                        |
+| Settings (profile, password, 2FA, biometric, notifications, sessions, privacy) | 🖼️ (UI scaffolding, no persistence) | 🚧 (placeholder) |
+| Sign out                      | ✅                      | ✅ (clears secure session) |
+
+### What "real" means here
+
+When the table says **✅** for data-driven screens (Cards, Bill Pay, Budgeting, Transfers' account selectors, Accounts, Dashboard) the components filter `db/*.json` by the currently-logged-in user. The screens really do show user-specific accounts/cards/transactions/payees — but no _writes_ are persisted. Refresh the page and any in-memory toggles or "paid" states reset.
+
+---
+
+## ⚠️ Known data model gaps
+
+Two schema decisions are worth flagging before any backend work begins:
+
+1. **Payees double as wire recipients.** `apps/web/src/app/components/Transfers.tsx` reads `db/payees.json` for the "Saved recipient" dropdown on non-internal transfers. The same file feeds Bill Pay. A real banking schema would separate _payees_ (recurring biller relationships) from _transfer recipients_ (counterparties with routing details).
+2. **Missing fields, deferred via `TODO: backfill` markers** (3 in `apps/web/src/app/components/`):
+   - `Cards.tsx` — `dailyLimit` for debit/non-credit cards (the UI hardcodes $250k as a placeholder)
+   - `BillPay.tsx` — explicit `status` per payee (currently derived from `recurringPayment.nextDue`)
+   - `Budgeting.tsx` — `db/budgets.json` has no entry for newly-created (sign-up) users
+
+---
+
+## 📊 Database
+
+Six JSON files in `db/` back the entire prototype. See [`db/README.md`](db/README.md) for the full schema, sample records, and tier-fee definitions.
+
+```text
+db/
+├── users.json          # 3 users, 5 tier definitions
+├── accounts.json       # 8 bank accounts ($43.7M total)
+├── cards.json          # 7 credit/debit cards
+├── transactions.json   # ~15+ transactions across all users
+├── payees.json         # 9 bill-pay payees (also used as wire recipients in web)
+└── budgets.json        # per-user category budgets + savings goals
+```
+
+### Relationships
+
+```text
+users.json (id)
+  ├─→ accounts.json (userId)
+  │     └─→ transactions.json (accountId)
+  ├─→ cards.json (userId, accountId)
+  │     └─→ transactions.json (cardId)
+  ├─→ payees.json (userId)
+  └─→ budgets.json (userId)
+```
+
+### Access patterns
+
+- **Mobile** uses `@goldlink/core` (see [`packages/core/README.md`](packages/core/README.md)). The package re-exports typed accessors like `getAccountsForUser(userId)` and `getCardsForUser(userId)`.
+- **Web** currently imports the JSON files directly (`import accountsData from '../../../../../db/accounts.json'`) and filters in component-level `useEffect`s. Moving web onto `@goldlink/core` is a planned refactor.
+
+---
+
+## 🎨 Branding & design
+
+### Color scheme
+
+| Token        | Value                                  | Use                                    |
+| ------------ | -------------------------------------- | -------------------------------------- |
+| Carbon BG    | `#0a0a0c` / `#121217` / `#1a1a20`      | Page, card, elevated card backgrounds  |
+| Gold accent  | `#cca858` / `#e6cc80` / `#d4af37`      | Brand, CTAs, focus rings, highlights   |
+| Text         | `#fafafa` / `#a1a1aa` / `#71717a`      | Primary / secondary / muted text       |
+| Border       | `#27272a`                              | Card / divider borders                 |
+| Success      | `#10b981`                              | Credits, "active" status               |
+| Danger       | `#ef4444`                              | Frozen cards, sign-out, errors         |
 
 ### Typography
-- Headings: Font-semibold
-- Body: Default system fonts
-- Numbers: Monospace for account/card numbers
+
+- **Inter** family (the mobile theme references the Inter weights 300/400/500/600/700)
+- Numbers use `tabular-nums` / monospace for account and card numbers
+- Headings lean light (`font-light` / `300`) for the executive aesthetic
+
+### Tier accents (web)
+
+The web app applies tier-specific gradients in component-level Tailwind classes:
+
+- UHNW: `from-amber-400 to-yellow-500`
+- Private: `from-purple-600 to-indigo-600`
+- Platinum: `from-gray-400 to-gray-500`
 
 ---
 
-## 🔒 Security Features (Demo)
+## 🔒 Security features (demo only)
 
-**Current Implementation (Development Only):**
-- Plain text passwords for easy testing
-- No encryption (demo data only)
-- Session storage in localStorage
-- All data is client-side
+**Current state — do not use any of this with real data:**
 
-**Production Requirements:**
-⚠️ Before deploying to production, you MUST implement:
+- Plain-text passwords in `db/users.json`
+- No encryption at rest or in transit
+- Web auth state lives in local component state (no token, no refresh)
+- Mobile auth state is a small JSON blob in `expo-secure-store` (keychain on iOS, encrypted shared prefs on Android) — encrypted by the OS, but the credentials themselves are still plaintext on disk in `db/users.json`
+- Full card numbers and CVVs are present in `db/cards.json` for the masking UI; nothing tokenized
 
-1. **Authentication**
-   - Bcrypt password hashing (12+ rounds)
-   - JWT or OAuth 2.0 tokens
-   - Refresh token rotation
-   - Device fingerprinting
+**Before any production deployment**, expect to implement:
 
-2. **Encryption**
-   - AES-256 for data at rest
-   - TLS 1.3 for data in transit
-   - PCI DSS Level 1 compliance
-   - Tokenize all card numbers
-
-3. **Compliance**
-   - SOC 2 Type II certification
-   - GDPR compliance
-   - CCPA compliance
-   - Regular security audits
-   - Penetration testing
+1. Hashed passwords (bcrypt / Argon2)
+2. Real auth (OAuth 2.0 / OIDC or a hosted auth provider)
+3. PCI-DSS tokenization for card data; AES-256 at rest; TLS 1.3 in transit
+4. Real 2FA (TOTP/WebAuthn) and real biometric attestation
+5. Server-side authorization, audit logging, anomaly detection, rate limiting
+6. Compliance: PCI-DSS Level 1, SOC 2 Type II, GDPR/CCPA depending on jurisdiction
 
 ---
 
-## 🛠️ Technical Stack
+## 🛠️ Technical stack
 
-### Frontend
-- **React 18.3.1** - UI framework
-- **React Router 7.13.0** - Navigation
-- **TypeScript** - Type safety
-- **Tailwind CSS 4.1.12** - Styling
-
-### UI Components
-- **Radix UI** - Accessible component primitives
-- **Lucide React** - Icon library
-- **Recharts** - Data visualization
-- **Sonner** - Toast notifications
-- **React Hook Form** - Form management
-
-### Database (Demo)
-- **JSON files** - Simple file-based storage
-- No backend server required
-- Client-side data loading
+| Surface              | Stack                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------- |
+| `apps/web`           | React 18.3, TypeScript 5, Vite 6, Tailwind v4, shadcn/ui + Radix, MUI 7, motion (`motion/react`), Recharts, Lucide, Sonner, React Hook Form, React Router 7 |
+| `apps/mobile`        | React 19, React Native 0.81, Expo SDK 54, Expo Router 6, `expo-secure-store`, `expo-linear-gradient`, `@expo/vector-icons` (Feather), plain `StyleSheet` |
+| `packages/core`      | TypeScript only; tested with Vitest                                                                      |
+| Tooling              | pnpm workspaces, ESLint v9 (flat config), Prettier 3, GitHub Actions CI                                  |
+| "Database"           | JSON files in `db/`                                                                                      |
 
 ---
 
-## 📱 Responsive Design
+## 📱 Responsive design
 
-The application is fully responsive and optimized for:
-- ✅ Desktop (1920px+)
-- ✅ Laptop (1280px - 1920px)
-- ✅ Tablet (768px - 1280px)
-- ✅ Mobile (320px - 768px)
+The web SPA is optimized for desktop, laptop, tablet, and mobile (Safari/Chrome) viewports. It uses a hamburger menu in mobile widths and a persistent sidebar above the tablet breakpoint.
 
-**Mobile Features:**
-- Hamburger menu navigation
-- Touch-friendly buttons
-- Optimized card layouts
-- Responsive charts
+The **mobile app** is a separate, native experience (iOS / Android via Expo Go) — it is not the web SPA's responsive layout, it's its own Expo Router app under `apps/mobile/app/`.
 
 ---
 
-## 🎯 User Experience Highlights
+## 🎯 UHNWI experience (Pierre Mvita) — what to look for
 
-### UHNWI Experience (Pierre Mvita)
-When logged in as `pmvita`:
+When signed in as `pmvita` on the **web** app:
 
-1. **Golden Tier Badge** - Crown icon with "Ultra High Net Worth" label
-2. **Relationship Manager Info** - Victoria Sterling contact displayed
-3. **Premium Benefits Card** - Exclusive benefits showcase on dashboard
-4. **High-Value Transactions** - Luxury purchases (Tiffany, Four Seasons)
-5. **Multiple Account Types** - Investment and Money Market accounts
-6. **Visa Infinite Card** - $500k credit limit with 156k rewards points
-7. **White-Glove Messaging** - "Contact Team" quick action button
+1. Gold tier badge with crown / award icon and "Ultra High Net Worth" label
+2. Greeting: "Welcome back, Pierre"
+3. Victoria Sterling shown as relationship manager (on dashboard and in the `more` profile card on mobile)
+4. Premium benefits card on the dashboard
+5. Four accounts (Checking, Savings, Investment, Money Market) totaling $41.1M
+6. Visa Infinite credit card with $500k limit and 156,789 rewards points + two debit cards (one of which is frozen)
+7. High-value transactions (Tiffany & Co. -$45,678.99; Quarterly Dividend +$125,000; Four Seasons Bora Bora -$28,500; Le Bernardin -$850.50)
+8. "Contact Team" quick action on the dashboard
 
-### Navigation
-- **Persistent Sidebar** - Desktop navigation always visible
-- **Mobile Menu** - Slide-out drawer for mobile devices
-- **Quick Actions** - One-click transfers and bill pay
-- **Search Functionality** - Transaction search across all pages
+On the **mobile** app, the experience is intentionally lighter — splash → login → dashboard hero with total balance, accounts/cards tabs, and a "More" stub for the rest.
 
 ---
 
-## 📈 Key Metrics (Pierre Mvita Account)
+## 📈 UHNWI portfolio metrics
 
-**Portfolio Composition:**
-- Checking: 7% ($2.85M)
-- Savings: 21% ($8.46M)
-- Investment: 60% ($24.57M)
-- Money Market: 12% ($5.23M)
+**Composition (Pierre Mvita, USR-001):**
 
-**Transaction Volume:**
-- Largest Single Transaction: $500,000 (Investment Transfer)
-- Average Transaction: ~$50,000
-- Monthly Interest Income: ~$30,000
-- Credit Card Spending: $87,543.28 current balance
+- Checking: ~7% ($2.85M)
+- Savings: ~21% ($8.46M)
+- Investment: ~60% ($24.57M)
+- Money Market: ~12% ($5.23M)
 
-**Credit Profile:**
-- Total Credit Limit: $500,000
-- Available Credit: $412,456.72
-- Rewards Points: 156,789 points
-- Payment History: Excellent
+**Credit profile:**
+
+- Total credit limit: $500,000
+- Available credit: $412,456.72
+- Rewards points: 156,789
+- Outstanding card balance: $87,543.28
+
+(Numbers are taken verbatim from `db/accounts.json` and `db/cards.json`.)
 
 ---
 
-## 🚦 Getting Started - Development
+## 🗺️ Roadmap
 
-### Prerequisites
-- Node.js 18+
-- pnpm package manager
+### Done
 
-### Installation
-```bash
-# Install dependencies
-pnpm install
+- Local JSON mock backend
+- Web SPA with full screen surface (Dashboard, Accounts, Cards, Transfers, Bill Pay, Budgeting, Mobile Deposit, Settings)
+- Per-user filtering across Cards, Bill Pay, Budgeting, Transfers
+- Mobile companion app (Expo SDK 54, Expo Go compatible)
+- Shared `@goldlink/core` package consumed by mobile
+- ESLint v9 + Prettier + Vitest + GitHub Actions CI
 
-# Start development server
-# Note: Server is already running in Figma Make environment
-```
+### Planned
 
-### Login Flow
-1. Navigate to `/login`
-2. Enter credentials (pmvita / admin123)
-3. Complete 2FA verification (any 6-digit code)
-4. Redirected to dashboard
-
-### Testing Different Users
-- **UHNWI:** pmvita / admin123
-- **Private:** sarah.johnson@email.com / demo123
-- **Platinum:** demo@bank.com / demo123
+- Move `apps/web` onto `@goldlink/core` so types and accessors are shared (eliminates the local `(typeof cardsData)['cards'][number]` patterns)
+- Re-enable Prettier on `apps/web` (currently ignored in `.prettierignore`)
+- Fix the pre-existing `motion/react` `Variant` type errors so root `pnpm typecheck` can include `apps/web`
+- Backfill the 3 outstanding `TODO: backfill` data fields
+- Split `payees.json` into bill-pay payees vs wire recipients
+- Wire mobile Transfers / Bill Pay / Deposit / Budgeting / Settings screens (currently placeholder)
+- Real backend + auth + persistence
 
 ---
 
-## 📝 Feature Roadmap
+## 📞 Documentation map
 
-### Phase 1 (Current - MVP) ✅
-- Login & Authentication
-- Account Viewing
-- Basic Transfers
-- Transaction History
-
-### Phase 2 (Enhanced Features) ✅
-- Bill Pay
-- Mobile Deposit
-- Card Management
-- Budgeting Tools
-
-### Phase 3 (Future)
-- [ ] Real backend API integration
-- [ ] Mobile native apps (iOS/Android)
-- [ ] Advanced analytics
-- [ ] Investment portfolio tracking
-- [ ] Real-time notifications
-- [ ] Document vault
-- [ ] Video banking consultations
-- [ ] Cryptocurrency integration
-
----
-
-## 📞 Support & Documentation
-
-**Database Documentation:** See `/db/README.md` for complete database schema
-
-**Component Structure:**
-```
-src/app/
-├── App.tsx                 # Main app with routing
-├── components/
-│   ├── LoginPage.tsx       # Authentication
-│   ├── Dashboard.tsx       # Main dashboard
-│   ├── Layout.tsx          # App layout wrapper
-│   ├── Accounts.tsx        # Account management
-│   ├── Transfers.tsx       # Money transfers
-│   ├── BillPay.tsx         # Bill payments
-│   ├── MobileDeposit.tsx   # Check deposit
-│   ├── Cards.tsx           # Card management
-│   ├── Budgeting.tsx       # Budget & goals
-│   └── Settings.tsx        # User settings
-```
-
----
-
-## 🏆 Excellence Standards
-
-**GoldLink Bank** represents:
-- ✅ Modern wealth management UX
-- ✅ Tier-based service differentiation
-- ✅ Comprehensive financial tools
-- ✅ Security-first design
-- ✅ Responsive across all devices
-- ✅ Accessible UI components
-- ✅ Real-world banking workflows
-
----
-
-## 📄 License & Usage
-
-This is a demonstration application showcasing a full-stack banking platform. All data is fictional and for development/testing purposes only.
-
-**Demo Data:**
-- All users are fictional
-- All transactions are simulated
-- All account numbers are randomly generated
-- Passwords are intentionally simple for demo purposes
+- [`README.md`](README.md) — entry point, monorepo layout, scripts, caveats
+- [`db/README.md`](db/README.md) — full database schema, tier definitions, integration examples
+- [`packages/core/README.md`](packages/core/README.md) — shared package API surface
+- [`apps/mobile/README.md`](apps/mobile/README.md) — Expo run instructions and demo credentials
+- [`CHANGES_SUMMARY.md`](CHANGES_SUMMARY.md) — changelog of major reworks
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — quick reference for contributors
 
 ---
 
 <div align="center">
 
-**GoldLink Bank**  
-*Exceptional Banking for Exceptional People*
+**GoldLink Bank** — _Exceptional Banking for Exceptional People_
 
-© 2026 GoldLink Bank. All rights reserved.
+© 2026 GoldLink Bank. All data is fictional.
 
 </div>
