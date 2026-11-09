@@ -3,64 +3,83 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Button } from './ui/button';
 import { Plus, Receipt, Zap, ShieldCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import payeesData from '../../../../../db/payees.json';
+import type { Payee, User } from '@goldlink/core';
+
+type BillStatus = 'pending' | 'paid';
 
 type Bill = {
   id: string;
   payee: string;
   due: string;
   amount: number;
-  status: 'pending' | 'paid';
+  status: BillStatus;
 };
 
-export default function BillPay({ user, onLogout }) {
+type BillPayProps = {
+  user: User;
+  onLogout: () => void;
+};
+
+/**
+ * Placeholder mapping from a Payee record to a UI status. We treat any payee
+ * whose `recurringPayment.nextDue` is in the past as "paid" and anything in the
+ * future as "pending". This will be replaced once the backend persists an
+ * explicit `status` field on each scheduled payment.
+ */
+function derivePaymentStatus(p: Payee, now: number = Date.now()): BillStatus {
+  const due = p.recurringPayment?.nextDue || p.lastPayment?.date;
+  if (!due) return 'pending';
+  return new Date(due).getTime() < now ? 'paid' : 'pending';
+}
+
+export default function BillPay({ user, onLogout }: BillPayProps) {
   const [bills, setBills] = useState<Bill[]>([]);
 
   useEffect(() => {
-    // payees.json has a userId field, so scope by current user
-    const userPayees = payeesData.payees.filter(p => p.userId === user.id);
+    const userPayees = (payeesData.payees as Payee[]).filter((p) => p.userId === user.id);
     const now = Date.now();
 
-    const adapted: Bill[] = userPayees.map(p => {
-      // TODO: backfill explicit `status` field on each payee in db/payees.json
-      // For now we derive pending/paid from recurringPayment.nextDue vs today.
+    const adapted: Bill[] = userPayees.map((p) => {
       const due = p.recurringPayment?.nextDue || p.lastPayment?.date || new Date().toISOString();
-      const status: Bill['status'] = new Date(due).getTime() < now ? 'paid' : 'pending';
       return {
         id: p.id,
         payee: p.name,
         due,
         amount: p.defaultAmount,
-        status,
+        status: derivePaymentStatus(p, now),
       };
     });
 
     setBills(adapted);
   }, [user]);
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+      transition: { staggerChildren: 0.1 },
+    },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
   };
 
   return (
     <Layout user={user} onLogout={onLogout}>
-      <motion.div 
+      <motion.div
         className="space-y-8"
         variants={containerVariants}
         initial="hidden"
         animate="show"
       >
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
           <div>
             <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Concierge Bill Pay</h1>
             <p className="text-gray-400">Automate and manage your premium obligations.</p>
@@ -78,23 +97,43 @@ export default function BillPay({ user, onLogout }) {
               </CardHeader>
               <CardContent className="space-y-4">
                 {bills.length === 0 && (
-                  <p className="text-sm text-gray-500 py-2">No payees on file yet. Add a payee to get started.</p>
+                  <p className="text-sm text-gray-500 py-2">
+                    No payees on file yet. Add a payee to get started.
+                  </p>
                 )}
                 {bills.map((bill) => (
-                  <div key={bill.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-xl bg-[#0a0a0c] border border-[#27272a] hover:border-[#cca858]/30 transition-colors gap-4">
+                  <div
+                    key={bill.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-xl bg-[#0a0a0c] border border-[#27272a] hover:border-[#cca858]/30 transition-colors gap-4"
+                  >
                     <div className="flex items-center gap-4">
-                      <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${bill.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-[#1a1a20] text-[#cca858]'}`}>
-                        {bill.status === 'paid' ? <ShieldCheck className="h-6 w-6" /> : <Receipt className="h-6 w-6" />}
+                      <div
+                        className={`h-12 w-12 rounded-xl flex items-center justify-center ${bill.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-[#1a1a20] text-[#cca858]'}`}
+                      >
+                        {bill.status === 'paid' ? (
+                          <ShieldCheck className="h-6 w-6" />
+                        ) : (
+                          <Receipt className="h-6 w-6" />
+                        )}
                       </div>
                       <div>
                         <h4 className="text-white font-medium text-lg">{bill.payee}</h4>
-                        <p className="text-sm text-gray-500">Due: {new Date(bill.due).toLocaleDateString()}</p>
+                        <p className="text-sm text-gray-500">
+                          Due: {new Date(bill.due).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between sm:flex-col sm:items-end gap-3 sm:gap-1">
-                      <p className="text-xl text-white font-light">${bill.amount.toLocaleString()}</p>
+                      <p className="text-xl text-white font-light">
+                        ${bill.amount.toLocaleString()}
+                      </p>
                       {bill.status === 'pending' ? (
-                        <Button size="sm" className="bg-[#1a1a20] hover:bg-[#27272a] text-white border border-[#27272a]">Pay Now</Button>
+                        <Button
+                          size="sm"
+                          className="bg-[#1a1a20] hover:bg-[#27272a] text-white border border-[#27272a]"
+                        >
+                          Pay Now
+                        </Button>
                       ) : (
                         <span className="text-emerald-400 text-sm font-medium">Paid</span>
                       )}
@@ -111,11 +150,14 @@ export default function BillPay({ user, onLogout }) {
                 <CardTitle className="text-lg font-medium text-white flex items-center gap-2">
                   <Zap className="h-5 w-5 text-[#cca858]" /> Auto-Pay Concierge
                 </CardTitle>
-                <CardDescription className="text-gray-400">Let us handle the details.</CardDescription>
+                <CardDescription className="text-gray-400">
+                  Let us handle the details.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-300 mb-6 leading-relaxed">
-                  Your Private Advisor can automatically review and process recurring bills, property taxes, and staff payrolls.
+                  Your Private Advisor can automatically review and process recurring bills,
+                  property taxes, and staff payrolls.
                 </p>
                 <Button className="w-full bg-[#cca858] hover:bg-[#b5954a] text-[#121217]">
                   Configure Auto-Pay

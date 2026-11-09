@@ -1,32 +1,48 @@
 import Layout from './Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Button } from './ui/button';
-import { ShieldCheck, Plus, ArrowUpRight, ArrowDownRight, CreditCard, Landmark, LineChart, MoreHorizontal } from 'lucide-react';
+import {
+  ShieldCheck,
+  Plus,
+  ArrowUpRight,
+  ArrowDownRight,
+  CreditCard,
+  Landmark,
+  LineChart,
+  MoreHorizontal,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import accountsData from '../../../../../db/accounts.json';
 import transactionsData from '../../../../../db/transactions.json';
+import type { Account, AccountType, Transaction, User } from '@goldlink/core';
 
-export default function Accounts({ user, onLogout }) {
+type AccountsProps = {
+  user: User;
+  onLogout: () => void;
+};
+
+// Display shape for both real accounts and demo fallbacks (pre-masked number).
+type AccountDisplay = { id: string; type: string; name: string; number: string; balance: number };
+
+export default function Accounts({ user, onLogout }: AccountsProps) {
   const navigate = useNavigate();
-  const [userAccounts, setUserAccounts] = useState([]);
-  const [userTransactions, setUserTransactions] = useState([]);
+  const [userAccounts, setUserAccounts] = useState<Account[]>([]);
+  const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
-    const accounts = accountsData.accounts.filter(acc => acc.userId === user.id) || [
-      {id: '1', type: 'checking', name: 'Private Checking', number: '•••• 4829', balance: 1250000.50},
-      {id: '2', type: 'investment', name: 'Global Investment', number: '•••• 9931', balance: 8400000.00},
-      {id: '3', type: 'trust', name: 'Offshore Trust', number: '•••• 1120', balance: 2850449.50}
-    ];
+    const accounts = (accountsData.accounts as Account[]).filter((acc) => acc.userId === user.id);
     setUserAccounts(accounts);
 
-    const accountIds = accounts.map(acc => acc.id);
-    const txns = transactionsData.transactions?.filter(txn => accountIds.includes(txn.accountId)) || [];
+    const accountIds = accounts.map((acc) => acc.id);
+    const txns = (transactionsData.transactions as Transaction[]).filter((txn) =>
+      accountIds.includes(txn.accountId)
+    );
     setUserTransactions(txns);
   }, [user]);
 
-  const formatCurrency = (value) => {
+  const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -34,37 +50,112 @@ export default function Accounts({ user, onLogout }) {
     }).format(value);
   };
 
-  const getAccountIcon = (type) => {
+  const getAccountIcon = (type: AccountType | string) => {
     switch (type) {
-      case 'checking': return <CreditCard className="h-6 w-6 text-[#cca858]" />;
-      case 'savings': return <Landmark className="h-6 w-6 text-[#cca858]" />;
-      case 'investment': return <LineChart className="h-6 w-6 text-[#cca858]" />;
-      default: return <ShieldCheck className="h-6 w-6 text-[#cca858]" />;
+      case 'checking':
+        return <CreditCard className="h-6 w-6 text-[#cca858]" />;
+      case 'savings':
+        return <Landmark className="h-6 w-6 text-[#cca858]" />;
+      case 'investment':
+        return <LineChart className="h-6 w-6 text-[#cca858]" />;
+      default:
+        return <ShieldCheck className="h-6 w-6 text-[#cca858]" />;
     }
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+      transition: { staggerChildren: 0.1 },
+    },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
   };
+
+  const displayAccounts: AccountDisplay[] = userAccounts.length
+    ? userAccounts.map((a) => ({
+        id: a.id,
+        type: a.type,
+        name: a.name,
+        number: `•••• ${a.accountNumber.slice(-4)}`,
+        balance: a.balance,
+      }))
+    : [
+        {
+          id: '1',
+          type: 'checking',
+          name: 'Private Checking',
+          number: '•••• 4829',
+          balance: 1250000.5,
+        },
+        {
+          id: '2',
+          type: 'investment',
+          name: 'Global Investment',
+          number: '•••• 9931',
+          balance: 8400000.0,
+        },
+        {
+          id: '3',
+          type: 'investment',
+          name: 'Offshore Trust',
+          number: '•••• 1120',
+          balance: 2850449.5,
+        },
+      ];
+
+  type TxnDisplay = { id: string; description: string; amount: number; date: string };
+  const displayTransactions: TxnDisplay[] = userTransactions.length
+    ? userTransactions.slice(0, 10).map((t) => ({
+        id: t.id,
+        description: t.description,
+        amount: t.type === 'debit' ? -Math.abs(t.amount) : Math.abs(t.amount),
+        date: t.date,
+      }))
+    : [
+        {
+          id: '1',
+          description: "Sotheby's Auction House",
+          amount: -450000,
+          date: '2026-05-02T14:30:00',
+        },
+        {
+          id: '2',
+          description: 'Dividend - Vanguard S&P 500',
+          amount: 125400.5,
+          date: '2026-05-01T09:15:00',
+        },
+        {
+          id: '3',
+          description: 'Private Jet Charter Services',
+          amount: -28500,
+          date: '2026-04-28T16:45:00',
+        },
+        { id: '4', description: 'Patek Philippe SA', amount: -185000, date: '2026-04-25T11:20:00' },
+        {
+          id: '5',
+          description: 'Wire Transfer - Cayman Islands',
+          amount: -1500000,
+          date: '2026-04-20T10:00:00',
+        },
+      ];
 
   return (
     <Layout user={user} onLogout={onLogout}>
-      <motion.div 
+      <motion.div
         className="space-y-8"
         variants={containerVariants}
         initial="hidden"
         animate="show"
       >
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
           <div>
             <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Accounts Portfolio</h1>
             <p className="text-gray-400">Manage and monitor your private wealth accounts.</p>
@@ -76,10 +167,13 @@ export default function Accounts({ user, onLogout }) {
 
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {userAccounts.map((account) => (
-              <Card key={account.id} className="bg-[#121217] border-[#27272a] hover:border-[#cca858]/50 transition-all overflow-hidden group">
+            {displayAccounts.map((account) => (
+              <Card
+                key={account.id}
+                className="bg-[#121217] border-[#27272a] hover:border-[#cca858]/50 transition-all overflow-hidden group"
+              >
                 <CardContent className="p-0">
-                  <div 
+                  <div
                     className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#27272a] cursor-pointer"
                     onClick={() => navigate(`/accounts/${account.id}`)}
                   >
@@ -88,21 +182,32 @@ export default function Accounts({ user, onLogout }) {
                         {getAccountIcon(account.type)}
                       </div>
                       <div>
-                        <h2 className="text-xl font-medium text-white group-hover:text-[#cca858] transition-colors">{account.name}</h2>
+                        <h2 className="text-xl font-medium text-white group-hover:text-[#cca858] transition-colors">
+                          {account.name}
+                        </h2>
                         <p className="text-gray-400 font-mono text-sm mt-1">{account.number}</p>
                       </div>
                     </div>
                     <div className="md:text-right">
-                      <p className="text-3xl font-light text-white">{formatCurrency(account.balance)}</p>
+                      <p className="text-3xl font-light text-white">
+                        {formatCurrency(account.balance)}
+                      </p>
                       <p className="text-sm text-emerald-400 mt-1">Available Balance</p>
                     </div>
                   </div>
                   <div className="bg-[#0a0a0c] px-6 py-4 flex items-center justify-between">
                     <div className="flex gap-2">
-                      <Button onClick={() => navigate('/transfers')} variant="ghost" className="text-gray-400 hover:text-white hover:bg-[#1a1a20] h-9 px-3 text-sm">
+                      <Button
+                        onClick={() => navigate('/transfers')}
+                        variant="ghost"
+                        className="text-gray-400 hover:text-white hover:bg-[#1a1a20] h-9 px-3 text-sm"
+                      >
                         <ArrowUpRight className="h-4 w-4 mr-2" /> Transfer
                       </Button>
-                      <Button variant="ghost" className="text-gray-400 hover:text-white hover:bg-[#1a1a20] h-9 px-3 text-sm">
+                      <Button
+                        variant="ghost"
+                        className="text-gray-400 hover:text-white hover:bg-[#1a1a20] h-9 px-3 text-sm"
+                      >
                         Statements
                       </Button>
                     </div>
@@ -118,30 +223,42 @@ export default function Accounts({ user, onLogout }) {
           <div className="space-y-6">
             <Card className="bg-[#121217] border-[#27272a] sticky top-24">
               <CardHeader>
-                <CardTitle className="text-lg font-medium text-white">Recent Transactions</CardTitle>
+                <CardTitle className="text-lg font-medium text-white">
+                  Recent Transactions
+                </CardTitle>
                 <CardDescription className="text-gray-400">Across all accounts</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                {(userTransactions.length ? userTransactions.slice(0, 10) : [
-                  {id: 1, description: 'Sotheby\'s Auction House', amount: -450000, date: '2026-05-02T14:30:00'},
-                  {id: 2, description: 'Dividend - Vanguard S&P 500', amount: 125400.50, date: '2026-05-01T09:15:00'},
-                  {id: 3, description: 'Private Jet Charter Services', amount: -28500, date: '2026-04-28T16:45:00'},
-                  {id: 4, description: 'Patek Philippe SA', amount: -185000, date: '2026-04-25T11:20:00'},
-                  {id: 5, description: 'Wire Transfer - Cayman Islands', amount: -1500000, date: '2026-04-20T10:00:00'}
-                ]).map((txn) => (
-                  <div key={txn.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-[#1a1a20] transition-colors cursor-pointer border border-transparent hover:border-[#27272a]">
+                {displayTransactions.map((txn) => (
+                  <div
+                    key={txn.id}
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-[#1a1a20] transition-colors cursor-pointer border border-transparent hover:border-[#27272a]"
+                  >
                     <div className="flex items-center gap-3">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${txn.amount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                        {txn.amount > 0 ? <ArrowDownRight className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+                      <div
+                        className={`h-10 w-10 rounded-full flex items-center justify-center ${txn.amount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
+                      >
+                        {txn.amount > 0 ? (
+                          <ArrowDownRight className="h-5 w-5" />
+                        ) : (
+                          <ArrowUpRight className="h-5 w-5" />
+                        )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-white font-medium text-sm truncate max-w-[120px]">{txn.description}</p>
-                        <p className="text-xs text-gray-500">{new Date(txn.date).toLocaleDateString()}</p>
+                        <p className="text-white font-medium text-sm truncate max-w-[120px]">
+                          {txn.description}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(txn.date).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right whitespace-nowrap ml-2">
-                      <p className={`font-medium text-sm ${txn.amount > 0 ? 'text-emerald-400' : 'text-white'}`}>
-                        {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
+                      <p
+                        className={`font-medium text-sm ${txn.amount > 0 ? 'text-emerald-400' : 'text-white'}`}
+                      >
+                        {txn.amount > 0 ? '+' : ''}
+                        {formatCurrency(txn.amount)}
                       </p>
                     </div>
                   </div>

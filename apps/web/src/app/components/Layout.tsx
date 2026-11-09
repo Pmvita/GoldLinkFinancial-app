@@ -10,13 +10,19 @@ import {
   PieChart,
   Settings,
   LogOut,
-  Shield,
   Menu,
   X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import type { User } from '@goldlink/core';
 
-export default function Layout({ children, user, onLogout }) {
+type LayoutProps = {
+  children: ReactNode;
+  user: User;
+  onLogout: () => void;
+};
+
+export default function Layout({ children, user, onLogout }: LayoutProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -38,20 +44,32 @@ export default function Layout({ children, user, onLogout }) {
         <div className="p-6 flex items-center gap-3">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#e6cc80] via-[#cca858] to-[#997a3d] p-[1px] shadow-lg shadow-[#cca858]/20">
             <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-gradient-to-br from-[#1a1a20] to-[#121217]">
-              <span className="font-serif text-xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[#e6cc80] to-[#cca858]">GL</span>
+              <span className="font-serif text-xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[#e6cc80] to-[#cca858]">
+                GL
+              </span>
             </div>
           </div>
-          <span className="text-xl font-light tracking-wider">GoldLink<span className="font-medium text-[#cca858]">Bank</span></span>
+          <span className="text-xl font-light tracking-wider">
+            GoldLink<span className="font-medium text-[#cca858]">Bank</span>
+          </span>
         </div>
-        
+
         <div className="px-4 py-2">
           <div className="bg-[#0a0a0c] rounded-xl p-4 border border-[#27272a] flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-gray-800 border-2 border-[#cca858] overflow-hidden">
-              <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
+              <img
+                src="https://i.pravatar.cc/100?img=12"
+                alt="User"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.fullName || user?.name || 'Valued Client'}</p>
-              <p className="text-xs text-[#cca858] truncate uppercase tracking-widest">{user?.tierName || user?.tier || 'Private Wealth'}</p>
+              <p className="text-sm font-medium text-white truncate">
+                {user.fullName || 'Valued Client'}
+              </p>
+              <p className="text-xs text-[#cca858] truncate uppercase tracking-widest">
+                {user.tierName || user.tier || 'Private Wealth'}
+              </p>
             </div>
           </div>
         </div>
@@ -95,13 +113,22 @@ export default function Layout({ children, user, onLogout }) {
           <div className="flex items-center gap-2">
             <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#e6cc80] via-[#cca858] to-[#997a3d] p-[1px] shadow-sm shadow-[#cca858]/20">
               <div className="flex h-full w-full items-center justify-center rounded-[7px] bg-gradient-to-br from-[#1a1a20] to-[#121217]">
-                <span className="font-serif text-sm font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[#e6cc80] to-[#cca858]">GL</span>
+                <span className="font-serif text-sm font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[#e6cc80] to-[#cca858]">
+                  GL
+                </span>
               </div>
             </div>
             <span className="text-lg font-light tracking-wider">GoldLink</span>
           </div>
-          <div className="h-8 w-8 rounded-full border border-[#cca858] overflow-hidden cursor-pointer" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
+          <div
+            className="h-8 w-8 rounded-full border border-[#cca858] overflow-hidden cursor-pointer"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <img
+              src="https://i.pravatar.cc/100?img=12"
+              alt="User"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
       </header>
@@ -112,11 +139,19 @@ export default function Layout({ children, user, onLogout }) {
           <div className="p-4 border-b border-[#27272a] flex justify-between items-center bg-[#121217]">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-full border-2 border-[#cca858] overflow-hidden">
-                <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
+                <img
+                  src="https://i.pravatar.cc/100?img=12"
+                  alt="User"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
-                <p className="text-base font-medium text-white">{user?.fullName || user?.name || 'Valued Client'}</p>
-                <p className="text-sm text-[#cca858] uppercase tracking-widest">{user?.tierName || user?.tier || 'Private Wealth'}</p>
+                <p className="text-base font-medium text-white">
+                  {user.fullName || 'Valued Client'}
+                </p>
+                <p className="text-sm text-[#cca858] uppercase tracking-widest">
+                  {user.tierName || user.tier || 'Private Wealth'}
+                </p>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
@@ -162,9 +197,7 @@ export default function Layout({ children, user, onLogout }) {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto bg-[#0a0a0c] pb-24 md:pb-0">
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
-          {children}
-        </div>
+        <div className="max-w-6xl mx-auto p-4 md:p-8">{children}</div>
       </main>
 
       {/* Mobile Bottom Navigation */}

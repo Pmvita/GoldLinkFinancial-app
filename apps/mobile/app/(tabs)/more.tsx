@@ -1,5 +1,6 @@
 import {
   Alert,
+  InteractionManager,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -59,15 +60,29 @@ export default function MoreScreen() {
   const router = useRouter();
   const { user } = useCurrentUser();
 
+  const navigateOutAfterLogout = () => {
+    // Reset through "/" so Splash re-reads storage; avoids stacking issues from (tabs)→/login.
+    // Defer until the alert dismiss finishes (required on some iOS/Android builds).
+    InteractionManager.runAfterInteractions(() => {
+      router.replace("/");
+    });
+  };
+
   const handleLogout = () => {
     Alert.alert("Sign out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Sign out",
         style: "destructive",
-        onPress: async () => {
-          await clearSession();
-          router.replace("/login");
+        onPress: () => {
+          void (async () => {
+            try {
+              await clearSession();
+            } catch (err) {
+              console.warn("[signOut] clearSession failed", err);
+            }
+            navigateOutAfterLogout();
+          })();
         },
       },
     ]);

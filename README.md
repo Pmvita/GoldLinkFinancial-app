@@ -2,7 +2,13 @@
 
 ![GoldLink Bank](https://images.unsplash.com/photo-1634733988138-bf2c3a2a13fa?q=80&w=2070&auto=format&fit=crop)
 
-**GoldLink Bank** is a premium banking prototype tailored for Ultra High Net Worth Individuals (UHNWI). It pairs a polished web experience with a native-feel mobile companion, both driven by the same local JSON mock backend. The aesthetic is built around a deep carbon and metallic gold palette and is engineered to feel like exclusive, private banking software.
+**GoldLink Bank** is a premium banking prototype tailored for Ultra High Net Worth Individuals (UHNWI). It pairs a polished web experience with a native-feel mobile companion, both driven by the same local JSON mock backend (with an optional Supabase path scaffolded but not yet end-to-end live). The aesthetic is built around a deep carbon and metallic gold palette and is engineered to feel like exclusive, private banking software.
+
+| | |
+| --- | --- |
+| **Status** | Local demo / portfolio prototype — not a production bank |
+| **Live URL** | N/A (no public deployment yet; run locally via Vite / Expo) |
+| **Package manager** | **pnpm** (workspace + `packageManager` field + `pnpm-lock.yaml`) |
 
 ---
 
@@ -18,16 +24,19 @@ GoldLink-Bank/
 │   └── mobile/                 # Expo SDK 54 + Expo Router app (Expo Go compatible)
 │       └── app/                # File-based routes: splash, login, (tabs)/*
 ├── packages/
-│   └── core/                   # Shared TS package — types, JSON accessors, formatters
+│   └── core/                   # Shared TS package — types, repos, auth, formatters
 ├── db/                         # Local JSON mock backend (users, accounts, …)
+├── supabase/                   # Optional Postgres migrations + seed (CLI playbook)
+├── docs/                       # Architecture notes
 ├── .github/workflows/ci.yml    # Prettier + ESLint + typecheck + Vitest + web build
 ├── eslint.config.mjs           # Flat ESLint v9 config
 ├── prettier.config.mjs
 ├── pnpm-workspace.yaml
+├── pnpm-lock.yaml
 └── tsconfig.base.json
 ```
 
-Both apps consume `db/*.json` directly. Mobile reads through `@goldlink/core`; web still imports JSON files directly (see [Current limitations](#-current-limitations--follow-ups)).
+Mobile reads through `@goldlink/core`. Web still imports JSON files directly in places (see [Current limitations](#-current-limitations--follow-ups)). Copy `.env.example` → `.env.local` when you want mode switches; never commit real secrets.
 
 ---
 
@@ -36,14 +45,14 @@ Both apps consume `db/*.json` directly. Mobile reads through `@goldlink/core`; w
 ### Prerequisites
 
 - Node.js 20+ (CI runs on 20)
-- pnpm 11 (managed by the repo's `packageManager` field)
+- pnpm 11 (managed by the repo's `packageManager` field — enable with `corepack enable` if needed)
 - For the mobile app: the [Expo Go](https://expo.dev/go) app on your iOS or Android device
 
 ### Install once at the root
 
 ```bash
-git clone https://github.com/your-username/goldlink-bank.git
-cd goldlink-bank
+git clone https://github.com/Pmvita/GoldLinkFinancial-app.git
+cd GoldLinkFinancial-app
 pnpm install
 ```
 
@@ -81,6 +90,9 @@ Run from the repo root:
 | `pnpm format:check`  | Prettier check (used by CI)                                     |
 | `pnpm typecheck`     | `tsc --noEmit` across workspaces _except_ `apps/web` (see below) |
 | `pnpm test`          | Vitest across workspaces that define a `test` script            |
+| `pnpm db:setup`      | Boot Supabase + run migrations + load seed (requires the Supabase CLI — see [`supabase/README.md`](supabase/README.md)) |
+| `pnpm db:start` / `db:stop` / `db:reset` / `db:migrate` / `db:seed` | Individual Supabase CLI sub-steps |
+| `pnpm db:regenerate-seed` | Re-emit `supabase/seed.sql` from `db/*.json`               |
 
 ---
 
@@ -138,8 +150,9 @@ A small TypeScript package consumed by `apps/mobile`. See [`packages/core/README
 
 - **Types:** `User`, `Account`, `Transaction`, `Card`, `Payee`, `Budget`, plus enums for tier/type/status.
 - **Data accessors:** `getUserById`, `findUserByCredentials`, `getAccountsForUser`, `getTransactionsForAccount`, `getTransactionsForUser`, `getCardsForUser`, `getPayeesForUser`, `getBudgetsForUser`, `getTotalBalanceForUser`, `getTierInfo`, `getAccountById`, `getAllUsers`.
+- **Repositories / auth factories:** JSON + Supabase repository implementations; simulated + Supabase auth providers (`createRepositories`, `createAuthProvider`).
 - **Formatters:** `formatCurrency`, `formatCompactCurrency`, `formatDate`, `formatRelativeDate`, `maskAccountNumber`.
-- **Tests:** 19 Vitest cases covering data accessors and formatters.
+- **Tests:** 53 Vitest cases covering data accessors, formatters, JSON repositories, simulated auth, and factories.
 
 ---
 
@@ -173,8 +186,8 @@ The mobile theme tokens live at `apps/mobile/src/theme.ts` and intentionally mir
 
 This is a demo / portfolio prototype. Treat the following as known engineering truths, not bugs:
 
-1. **No real backend.** Both apps read JSON files directly from `db/`. There is no API server, no auth service, no database, no persistence of writes — every mutation is in-memory and lost on reload.
-2. **Auth is plaintext.** Passwords are stored unhashed in `db/users.json`. The web 2FA step accepts any 6-digit code; biometric is a UI prompt only. The mobile login screen does username + password only (no 2FA, no biometric).
+1. **JSON + in-memory writes today; Supabase migration is one command away.** Reads come from `db/*.json` via the `JsonRepository` in `@goldlink/core`; writes are stored in an in-memory mutation layer (so they appear to persist within a session and are lost on reload). The shared core also ships a `SupabaseRepository` and `SupabaseAuthProvider` (compiling, not yet end-to-end tested) plus `supabase/` migrations, RLS policies, and a regenerable seed. To flip both apps onto a real Postgres backend, install the Supabase CLI (`brew install supabase/tap/supabase`), run `pnpm db:setup`, then set `GOLDLINK_DATA_MODE=supabase` + `GOLDLINK_AUTH_MODE=supabase` (plus `SUPABASE_URL` / `SUPABASE_ANON_KEY`) in `.env.local`. See [`docs/architecture.md`](docs/architecture.md) and [`supabase/README.md`](supabase/README.md).
+2. **Auth is plaintext (JSON mode).** Passwords are stored unhashed in `db/users.json`. The web 2FA step accepts any 6-digit code; biometric is a UI prompt only. The mobile login screen does username + password only (no 2FA, no biometric). The `SupabaseAuthProvider` shifts credential storage to Supabase Auth once flipped.
 3. **Web still uses local types.** `apps/web/src/app/components/*` re-derive types from JSON (`(typeof cardsData)['cards'][number]`) instead of consuming `@goldlink/core`. Refactoring web onto the shared package is a planned follow-up.
 4. **3 outstanding `TODO: backfill` markers** in `apps/web/src/app/components/`:
    - `Cards.tsx` — `dailyLimit` field missing for debit/non-credit cards in `db/cards.json`
@@ -199,7 +212,7 @@ CI runs on every push to `main` and every PR (`.github/workflows/ci.yml`):
 2. `pnpm format:check`
 3. `pnpm lint`
 4. `pnpm typecheck` (excludes `apps/web` for now — see above)
-5. `pnpm test` — currently 19 Vitest cases in `@goldlink/core`
+5. `pnpm test` — currently 53 Vitest cases in `@goldlink/core`
 6. `pnpm --filter web build`
 
 ---

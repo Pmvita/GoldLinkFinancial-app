@@ -22,6 +22,8 @@ export default [
       'db/**',
       'pnpm-lock.yaml',
       '.github/**',
+      // Backend worker territory — owned by a parallel worker.
+      'supabase/**',
     ],
   },
 
@@ -57,7 +59,10 @@ export default [
       react: { version: '18.3' },
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-unused-vars': 'off',
       'react/react-in-jsx-scope': 'off',

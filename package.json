@@ -9,9 +9,16 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "#typecheck": "TODO: drop the `--filter !web` once apps/web has clean strict-mode types — pre-existing motion/react Variant type errors live in apps/web/src/app/components which the JSON-wiring worker owns. apps/web still has its own `typecheck` script for local use (pnpm --filter web typecheck).",
-    "typecheck": "pnpm -r --filter !web --if-present typecheck",
-    "test": "pnpm -r --if-present test"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "#db": "Supabase CLI scripts. Install the CLI via `brew install supabase/tap/supabase` (it ships as a standalone binary, not an npm package). See supabase/README.md for the full playbook.",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:migrate": "supabase migration up",
+    "db:seed": "psql \"${SUPABASE_DB_URL:-postgresql://postgres:postgres@localhost:54322/postgres}\" -v ON_ERROR_STOP=1 -f supabase/seed.sql",
+    "db:setup": "pnpm db:start && pnpm db:migrate && pnpm db:seed",
+    "db:regenerate-seed": "node supabase/scripts/generate-seed.mjs > supabase/seed.sql"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",

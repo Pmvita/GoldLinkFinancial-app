@@ -3,26 +3,32 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { Button } from './ui/button';
-import { User, Bell, Shield, Key } from 'lucide-react';
-import { motion } from 'motion/react';
+import { User as UserIcon, Bell, Shield, Key } from 'lucide-react';
+import { motion, type Variants } from 'motion/react';
+import type { User } from '@goldlink/core';
 
-export default function Settings({ user, onLogout }) {
-  const containerVariants = {
+type SettingsProps = {
+  user: User;
+  onLogout: () => void;
+};
+
+export default function Settings({ user, onLogout }: SettingsProps) {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+      transition: { staggerChildren: 0.1 },
+    },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
   };
 
   return (
     <Layout user={user} onLogout={onLogout}>
-      <motion.div 
+      <motion.div
         className="space-y-8"
         variants={containerVariants}
         initial="hidden"
@@ -36,12 +42,16 @@ export default function Settings({ user, onLogout }) {
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-2">
             {[
-              { icon: User, label: 'Profile' },
+              { icon: UserIcon, label: 'Profile' },
               { icon: Shield, label: 'Security' },
               { icon: Bell, label: 'Notifications' },
-              { icon: Key, label: 'API Access' }
+              { icon: Key, label: 'API Access' },
             ].map((item, i) => (
-              <Button key={i} variant="ghost" className={`w-full justify-start h-12 ${i === 0 ? 'bg-[#1a1a20] text-[#cca858]' : 'text-gray-400 hover:text-white hover:bg-[#1a1a20]'}`}>
+              <Button
+                key={i}
+                variant="ghost"
+                className={`w-full justify-start h-12 ${i === 0 ? 'bg-[#1a1a20] text-[#cca858]' : 'text-gray-400 hover:text-white hover:bg-[#1a1a20]'}`}
+              >
                 <item.icon className="h-5 w-5 mr-3" />
                 {item.label}
               </Button>
@@ -51,20 +61,22 @@ export default function Settings({ user, onLogout }) {
           <div className="md:col-span-3 space-y-6">
             <Card className="bg-[#121217] border-[#27272a]">
               <CardHeader>
-                <CardTitle className="text-xl font-medium text-white">Personal Information</CardTitle>
+                <CardTitle className="text-xl font-medium text-white">
+                  Personal Information
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-gray-400">Legal Name</Label>
                     <div className="p-3 bg-[#0a0a0c] border border-[#27272a] rounded-lg text-white">
-                      {user?.name || 'Valued Client'}
+                      {user.fullName || 'Valued Client'}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-gray-400">Primary Email</Label>
                     <div className="p-3 bg-[#0a0a0c] border border-[#27272a] rounded-lg text-white">
-                      {user?.email || 'client@goldlink.com'}
+                      {user.email || 'client@goldlink.com'}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -90,27 +102,35 @@ export default function Settings({ user, onLogout }) {
 
             <Card className="bg-[#121217] border-[#27272a]">
               <CardHeader>
-                <CardTitle className="text-xl font-medium text-white">Security Preferences</CardTitle>
+                <CardTitle className="text-xl font-medium text-white">
+                  Security Preferences
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-white font-medium">Two-Factor Authentication (2FA)</p>
-                    <p className="text-sm text-gray-400">Require code for all logins and transfers.</p>
+                    <p className="text-sm text-gray-400">
+                      Require code for all logins and transfers.
+                    </p>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-white font-medium">Biometric Access</p>
-                    <p className="text-sm text-gray-400">Use FaceID / TouchID on supported devices.</p>
+                    <p className="text-sm text-gray-400">
+                      Use FaceID / TouchID on supported devices.
+                    </p>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-white font-medium">Overseas Travel Mode</p>
-                    <p className="text-sm text-gray-400">Enable card usage internationally without blocks.</p>
+                    <p className="text-sm text-gray-400">
+                      Enable card usage internationally without blocks.
+                    </p>
                   </div>
                   <Switch />
                 </div>

@@ -14,13 +14,9 @@ db/*.json
 # Long-form docs — keep author's formatting
 *.md
 
-# Parallel worker scope (apps/mobile is owned by another worker, may not exist yet)
+# Parallel worker scope — these areas are owned by other workers concurrently
+# editing them. Each worker is responsible for formatting their own files
+# before landing; we re-enable Prettier on these paths once they stabilize.
 apps/mobile
-
-# TODO: enable Prettier on apps/web once dust settles.
-# A parallel worker is concurrently editing apps/web/src/app/components/
-# (JSON-wiring), and a number of pre-existing files (main.tsx, vite.config.ts,
-# index.html, postcss.config.mjs, styles/theme.css, ui/*.tsx) have not yet
-# been run through Prettier. Narrow this ignore once the JSON-wiring worker
-# has landed and the web app has been formatted in a follow-up pass.
-apps/web
+packages/core
+supabase

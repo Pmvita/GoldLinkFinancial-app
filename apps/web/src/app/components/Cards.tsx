@@ -3,32 +3,41 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Lock, Settings, Snowflake, Eye } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import cardsData from '../../../../../db/cards.json';
 import usersData from '../../../../../db/users.json';
 import transactionsData from '../../../../../db/transactions.json';
+import type { Card as CoreCard, Transaction, User } from '@goldlink/core';
 
-type UserCard = (typeof cardsData)['cards'][number];
-type Txn = (typeof transactionsData)['transactions'][number];
+type CardsProps = {
+  user: User;
+  onLogout: () => void;
+};
 
-export default function Cards({ user, onLogout }) {
+// Reasonable default for non-credit (debit) cards — matches the standard tier's
+// daily ATM/POS ceiling in BANKING_APP_GUIDE.md. Used until `dailyLimit` is
+// modeled on the Card type in @goldlink/core.
+const DEFAULT_DEBIT_DAILY_LIMIT = 25_000;
+
+export default function Cards({ user, onLogout }: CardsProps) {
   const [showNumber, setShowNumber] = useState(false);
-  const [userCards, setUserCards] = useState<UserCard[]>([]);
-  const [cardholderName, setCardholderName] = useState<string>(user?.fullName || user?.name || 'Valued Client');
+  const [userCards, setUserCards] = useState<CoreCard[]>([]);
+  const [cardholderName, setCardholderName] = useState<string>(user.fullName || 'Valued Client');
 
   useEffect(() => {
-    const cards = cardsData.cards.filter(c => c.userId === user.id);
+    const cards = (cardsData.cards as CoreCard[]).filter((c) => c.userId === user.id);
     setUserCards(cards);
 
-    const fullUser = usersData.users.find(u => u.id === user.id);
+    const fullUser = (usersData.users as User[]).find((u) => u.id === user.id);
     if (fullUser) {
       setCardholderName(fullUser.fullName);
     }
   }, [user]);
 
-  const getCardActivity = (cardId: string): Txn[] => {
-    return transactionsData.transactions
-      .filter(t => t.cardId === cardId)
+  const getCardActivity = (cardId: string): Transaction[] => {
+    return (transactionsData.transactions as Transaction[])
+      .filter((t) => t.cardId === cardId)
+      .slice()
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3);
   };
@@ -42,28 +51,31 @@ export default function Cards({ user, onLogout }) {
     }).format(value);
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+      transition: { staggerChildren: 0.1 },
+    },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
   };
 
   return (
     <Layout user={user} onLogout={onLogout}>
-      <motion.div 
+      <motion.div
         className="space-y-8"
         variants={containerVariants}
         initial="hidden"
         animate="show"
       >
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
           <div>
             <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Cards & Access</h1>
             <p className="text-gray-400">Control your global purchasing power.</p>
@@ -92,15 +104,34 @@ export default function Cards({ user, onLogout }) {
           const isCredit = card.type === 'credit';
 
           return (
-            <motion.div key={card.id} variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <motion.div
+              key={card.id}
+              variants={itemVariants}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-12"
+            >
               {/* Card Visual */}
               <div className="space-y-6">
-                <div className="relative aspect-[1.586/1] w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl p-6 flex flex-col justify-between"
-                     style={{ background: 'linear-gradient(135deg, #111, #000)', border: '1px solid #333' }}>
-                  <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at center, #cca858 0%, transparent 60%)' }}></div>
+                <div
+                  className="relative aspect-[1.586/1] w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl p-6 flex flex-col justify-between"
+                  style={{
+                    background: 'linear-gradient(135deg, #111, #000)',
+                    border: '1px solid #333',
+                  }}
+                >
+                  <div
+                    className="absolute inset-0 opacity-20"
+                    style={{
+                      backgroundImage:
+                        'radial-gradient(circle at center, #cca858 0%, transparent 60%)',
+                    }}
+                  ></div>
                   <div className="relative z-10 flex justify-between items-start">
-                    <span className="text-[#cca858] text-xl font-serif tracking-widest">GOLDLINK</span>
-                    <span className="text-gray-400 text-sm tracking-widest uppercase">{card.network || 'Reserve'}</span>
+                    <span className="text-[#cca858] text-xl font-serif tracking-widest">
+                      GOLDLINK
+                    </span>
+                    <span className="text-gray-400 text-sm tracking-widest uppercase">
+                      {card.network || 'Reserve'}
+                    </span>
                   </div>
                   <div className="relative z-10 flex items-center mb-4">
                     <div className="w-12 h-8 rounded bg-gradient-to-br from-[#d4af37] via-[#aa8822] to-[#d4af37] opacity-80"></div>
@@ -108,7 +139,10 @@ export default function Cards({ user, onLogout }) {
                   <div className="relative z-10 space-y-4">
                     <div className="text-white text-2xl tracking-widest font-mono flex items-center gap-4">
                       {showNumber ? formattedNumber : maskedNumber}
-                      <button onClick={() => setShowNumber(!showNumber)} className="text-gray-500 hover:text-white">
+                      <button
+                        onClick={() => setShowNumber(!showNumber)}
+                        className="text-gray-500 hover:text-white"
+                      >
                         <Eye className="h-5 w-5" />
                       </button>
                     </div>
@@ -120,10 +154,16 @@ export default function Cards({ user, onLogout }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-                  <Button variant="outline" className="h-14 border-[#27272a] bg-[#121217] text-white hover:bg-[#1a1a20]">
+                  <Button
+                    variant="outline"
+                    className="h-14 border-[#27272a] bg-[#121217] text-white hover:bg-[#1a1a20]"
+                  >
                     <Snowflake className="h-4 w-4 mr-2 text-blue-400" /> Freeze Card
                   </Button>
-                  <Button variant="outline" className="h-14 border-[#27272a] bg-[#121217] text-white hover:bg-[#1a1a20]">
+                  <Button
+                    variant="outline"
+                    className="h-14 border-[#27272a] bg-[#121217] text-white hover:bg-[#1a1a20]"
+                  >
                     <Lock className="h-4 w-4 mr-2 text-red-400" /> Change PIN
                   </Button>
                 </div>
@@ -133,25 +173,34 @@ export default function Cards({ user, onLogout }) {
               <div className="space-y-6">
                 <Card className="bg-[#121217] border-[#27272a]">
                   <CardHeader>
-                    <CardTitle className="text-xl font-medium text-white">{card.name || 'Card Details'}</CardTitle>
+                    <CardTitle className="text-xl font-medium text-white">
+                      {card.name || 'Card Details'}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
                       <div className="flex justify-between border-b border-[#27272a] pb-4">
                         <span className="text-gray-400">Status</span>
-                        <span className={`${card.status === 'active' ? 'text-emerald-400' : 'text-red-400'} font-medium capitalize`}>
+                        <span
+                          className={`${card.status === 'active' ? 'text-emerald-400' : 'text-red-400'} font-medium capitalize`}
+                        >
                           {card.status || 'Active'}
                         </span>
                       </div>
                       <div className="flex justify-between border-b border-[#27272a] pb-4">
-                        <span className="text-gray-400">{isCredit ? 'Credit Limit' : 'Daily Limit'}</span>
-                        {/* TODO: backfill dailyLimit field for debit/non-credit cards in db/cards.json */}
+                        <span className="text-gray-400">
+                          {isCredit ? 'Credit Limit' : 'Daily Limit'}
+                        </span>
                         <span className="text-white font-medium">
-                          {isCredit ? formatCurrency(card.creditLimit) : formatCurrency(250000)}
+                          {isCredit
+                            ? formatCurrency(card.creditLimit)
+                            : formatCurrency(DEFAULT_DEBIT_DAILY_LIMIT)}
                         </span>
                       </div>
                       <div className="flex justify-between border-b border-[#27272a] pb-4">
-                        <span className="text-gray-400">{isCredit ? 'Current Balance' : 'Linked Account'}</span>
+                        <span className="text-gray-400">
+                          {isCredit ? 'Current Balance' : 'Linked Account'}
+                        </span>
                         <span className="text-white font-medium">
                           {isCredit ? formatCurrency(card.balance) : card.accountId}
                         </span>
@@ -161,13 +210,24 @@ export default function Cards({ user, onLogout }) {
                     <div className="pt-4 space-y-4">
                       <h4 className="text-white font-medium">Recent Card Activity</h4>
                       <div className="space-y-3">
-                        {activity.length > 0 ? activity.map((tx) => (
-                          <div key={tx.id} className="flex justify-between items-center p-3 bg-[#0a0a0c] rounded-lg border border-[#27272a]">
-                            <span className="text-white text-sm truncate max-w-[180px]">{tx.description}</span>
-                            <span className="text-white font-medium">{formatCurrency(Math.abs(tx.amount))}</span>
-                          </div>
-                        )) : (
-                          <p className="text-sm text-gray-500">No recent activity recorded for this card.</p>
+                        {activity.length > 0 ? (
+                          activity.map((tx) => (
+                            <div
+                              key={tx.id}
+                              className="flex justify-between items-center p-3 bg-[#0a0a0c] rounded-lg border border-[#27272a]"
+                            >
+                              <span className="text-white text-sm truncate max-w-[180px]">
+                                {tx.description}
+                              </span>
+                              <span className="text-white font-medium">
+                                {formatCurrency(Math.abs(tx.amount))}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-500">
+                            No recent activity recorded for this card.
+                          </p>
                         )}
                       </div>
                     </div>

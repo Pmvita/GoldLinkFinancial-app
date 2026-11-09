@@ -1,49 +1,76 @@
 import Layout from './Layout';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { ArrowUpRight, ArrowDownRight, Eye, EyeOff, Crown, Star, ShieldCheck, ChevronRight } from 'lucide-react';
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  Eye,
+  EyeOff,
+  Crown,
+  Star,
+  ShieldCheck,
+  ChevronRight,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { motion } from 'motion/react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { motion, type Variants } from 'motion/react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import accountsData from '../../../../../db/accounts.json';
 import transactionsData from '../../../../../db/transactions.json';
 import usersData from '../../../../../db/users.json';
+import type { Account, TierInfo, Transaction, User, UserTier } from '@goldlink/core';
 
-export default function Dashboard({ user, onLogout }) {
+type DashboardProps = {
+  user: User;
+  onLogout: () => void;
+};
+
+export default function Dashboard({ user, onLogout }: DashboardProps) {
   const navigate = useNavigate();
   const [balanceVisible, setBalanceVisible] = useState(true);
-  const [userAccounts, setUserAccounts] = useState([]);
-  const [recentTransactions, setRecentTransactions] = useState([]);
-  const [userTier, setUserTier] = useState(null);
+  const [userAccounts, setUserAccounts] = useState<Account[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [userTier, setUserTier] = useState<TierInfo | null>(null);
 
   useEffect(() => {
-    // Load user-specific data
-    const accounts = accountsData.accounts.filter(acc => acc.userId === user.id);
+    const accounts = (accountsData.accounts as Account[]).filter((acc) => acc.userId === user.id);
     setUserAccounts(accounts);
 
-    const accountIds = accounts.map(acc => acc.id);
-    const transactions = transactionsData.transactions
-      .filter(txn => accountIds.includes(txn.accountId))
+    const accountIds = accounts.map((acc) => acc.id);
+    const transactions = (transactionsData.transactions as Transaction[])
+      .filter((txn) => accountIds.includes(txn.accountId))
+      .slice()
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 8);
     setRecentTransactions(transactions);
 
-    const fullUser = usersData.users.find(u => u.id === user.id);
+    const fullUser = (usersData.users as User[]).find((u) => u.id === user.id);
     if (fullUser) {
-      setUserTier(usersData.tiers[fullUser.tier] || { name: 'Private Client', limits: { dailyTransfer: 1000000 } });
+      const tiers = usersData.tiers as Record<UserTier, TierInfo>;
+      setUserTier(tiers[fullUser.tier] ?? null);
     }
   }, [user]);
 
   const totalBalance = userAccounts.reduce((sum, acc) => sum + acc.balance, 0);
 
   const balanceData = (() => {
-    const grouped = [];
-    const seenDates = new Set();
-    let currentBalance = totalBalance || 12500450.00;
+    type Point = { name: string; balance: number };
+    const grouped: Point[] = [];
+    const seenDates = new Set<string>();
+    let currentBalance = totalBalance || 12500450.0;
 
     for (const txn of recentTransactions) {
-      const display = new Date(txn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) || 'Unknown';
+      const display =
+        new Date(txn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) ||
+        'Unknown';
       if (!seenDates.has(display)) {
         seenDates.add(display);
         grouped.push({
@@ -51,24 +78,24 @@ export default function Dashboard({ user, onLogout }) {
           balance: currentBalance,
         });
       }
-      // Revert the transaction to compute historical end-of-day balances
-      currentBalance -= (txn.amount || 0);
+      // Revert the signed delta of each transaction to recover historical end-of-day balances.
+      const delta = txn.type === 'debit' ? -Math.abs(txn.amount) : Math.abs(txn.amount);
+      currentBalance -= delta;
     }
-    
+
     const result = grouped.slice(0, 6).reverse();
-    
-    // Fix for Recharts duplicate key error when rendering a single data point
+
     if (result.length === 1) {
       result.unshift({
         name: 'Prev',
-        balance: result[0].balance
+        balance: result[0].balance,
       });
     }
-    
+
     return result;
   })();
 
-  const formatCurrency = (value) => {
+  const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -76,45 +103,102 @@ export default function Dashboard({ user, onLogout }) {
     }).format(value);
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
   };
+
+  // Lightweight display shape used by both real accounts and demo fallbacks. We
+  // pre-mask the account number so the JSX doesn't have to branch on shape.
+  type DashboardAccountDisplay = { id: string; name: string; number: string; balance: number };
+  const displayAccounts: DashboardAccountDisplay[] = userAccounts.length
+    ? userAccounts.map((a) => ({
+        id: a.id,
+        name: a.name,
+        number: `•••• ${a.accountNumber.slice(-4)}`,
+        balance: a.balance,
+      }))
+    : [
+        { id: '1', name: 'Private Checking', number: '•••• 4829', balance: 1250000.5 },
+        { id: '2', name: 'Global Investment', number: '•••• 9931', balance: 8400000.0 },
+        { id: '3', name: 'Offshore Trust', number: '•••• 1120', balance: 2850449.5 },
+      ];
+
+  type DashboardTxnDisplay = { id: string; description: string; amount: number; date: string };
+  const displayTransactions: DashboardTxnDisplay[] = recentTransactions.length
+    ? recentTransactions.slice(0, 4).map((t) => ({
+        id: t.id,
+        description: t.description,
+        amount: t.type === 'debit' ? -Math.abs(t.amount) : Math.abs(t.amount),
+        date: t.date,
+      }))
+    : [
+        {
+          id: '1',
+          description: "Sotheby's Auction House",
+          amount: -450000,
+          date: '2026-05-02T14:30:00',
+        },
+        {
+          id: '2',
+          description: 'Dividend - Vanguard S&P 500',
+          amount: 125400.5,
+          date: '2026-05-01T09:15:00',
+        },
+        {
+          id: '3',
+          description: 'Private Jet Charter Services',
+          amount: -28500,
+          date: '2026-04-28T16:45:00',
+        },
+        { id: '4', description: 'Patek Philippe SA', amount: -185000, date: '2026-04-25T11:20:00' },
+      ];
 
   return (
     <Layout user={user} onLogout={onLogout}>
-      <motion.div 
+      <motion.div
         className="space-y-8"
         variants={containerVariants}
         initial="hidden"
         animate="show"
       >
-        
         {/* Welcome Section */}
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+        >
           <div>
-            <h1 className="text-3xl md:text-4xl font-light text-white mb-2">Good {(() => {
-              const hour = new Date().getHours();
-              if (hour >= 5 && hour < 12) return 'morning';
-              if (hour >= 12 && hour < 17) return 'afternoon';
-              return 'evening';
-            })()}, <span className="font-medium text-[#cca858]">{user?.name?.split(' ')[0] || 'Client'}</span></h1>
+            <h1 className="text-3xl md:text-4xl font-light text-white mb-2">
+              Good{' '}
+              {(() => {
+                const hour = new Date().getHours();
+                if (hour >= 5 && hour < 12) return 'morning';
+                if (hour >= 12 && hour < 17) return 'afternoon';
+                return 'evening';
+              })()}
+              ,{' '}
+              <span className="font-medium text-[#cca858]">
+                {user.firstName || user.fullName?.split(' ')[0] || 'Client'}
+              </span>
+            </h1>
             <p className="text-gray-400">Here is your private wealth overview.</p>
           </div>
           {userTier && (
             <div className="inline-flex items-center gap-2 bg-[#cca858]/10 text-[#cca858] px-4 py-2 rounded-full border border-[#cca858]/20">
               <Crown className="h-4 w-4" />
-              <span className="text-sm font-medium uppercase tracking-wider">{userTier.name} Status</span>
+              <span className="text-sm font-medium uppercase tracking-wider">
+                {userTier.name} Status
+              </span>
             </div>
           )}
         </motion.div>
@@ -122,44 +206,59 @@ export default function Dashboard({ user, onLogout }) {
         {/* Total Net Worth Card */}
         <motion.div variants={itemVariants}>
           <Card className="bg-gradient-to-br from-[#121217] to-[#0a0a0c] border-[#27272a] shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#cca858] opacity-5 rounded-full blur-[80px]"></div>
-          <CardContent className="p-6 sm:p-8 md:p-12 relative z-10">
-            <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <p className="text-gray-400 font-medium uppercase tracking-widest text-xs sm:text-sm">Total Portfolio Value</p>
-                  <button onClick={() => setBalanceVisible(!balanceVisible)} className="text-gray-500 hover:text-[#cca858] transition-colors p-2 -ml-2">
-                    {balanceVisible ? <EyeOff className="h-5 w-5 sm:h-4 sm:w-4" /> : <Eye className="h-5 w-5 sm:h-4 sm:w-4" />}
-                  </button>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#cca858] opacity-5 rounded-full blur-[80px]"></div>
+            <CardContent className="p-6 sm:p-8 md:p-12 relative z-10">
+              <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <p className="text-gray-400 font-medium uppercase tracking-widest text-xs sm:text-sm">
+                      Total Portfolio Value
+                    </p>
+                    <button
+                      onClick={() => setBalanceVisible(!balanceVisible)}
+                      className="text-gray-500 hover:text-[#cca858] transition-colors p-2 -ml-2"
+                    >
+                      {balanceVisible ? (
+                        <EyeOff className="h-5 w-5 sm:h-4 sm:w-4" />
+                      ) : (
+                        <Eye className="h-5 w-5 sm:h-4 sm:w-4" />
+                      )}
+                    </button>
+                  </div>
+                  <h2 className="text-4xl sm:text-5xl md:text-6xl font-light text-white tracking-tight break-all">
+                    {balanceVisible ? formatCurrency(totalBalance || 12500450.0) : '••••••••'}
+                  </h2>
+                  <div className="flex items-center gap-2 text-sm mt-4">
+                    <span className="text-emerald-400 flex items-center bg-emerald-400/10 px-2 py-1 rounded-md">
+                      <ArrowUpRight className="h-4 w-4 mr-1" />
+                      +2.4%
+                    </span>
+                    <span className="text-gray-500">vs last month</span>
+                  </div>
                 </div>
-                <h2 className="text-4xl sm:text-5xl md:text-6xl font-light text-white tracking-tight break-all">
-                  {balanceVisible ? formatCurrency(totalBalance || 12500450.00) : '••••••••'}
-                </h2>
-                <div className="flex items-center gap-2 text-sm mt-4">
-                  <span className="text-emerald-400 flex items-center bg-emerald-400/10 px-2 py-1 rounded-md">
-                    <ArrowUpRight className="h-4 w-4 mr-1" />
-                    +2.4%
-                  </span>
-                  <span className="text-gray-500">vs last month</span>
-                </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto mt-4 lg:mt-0">
-                <Button onClick={() => navigate('/transfers')} className="w-full sm:w-auto bg-[#cca858] hover:bg-[#b5954a] text-[#121217] h-14 sm:h-12 px-6 text-base sm:text-sm font-semibold rounded-xl sm:rounded-lg shadow-lg shadow-[#cca858]/20">
-                  <ArrowUpRight className="h-5 w-5 sm:h-4 sm:w-4 mr-2" /> Make a Transfer
-                </Button>
-                <Button onClick={() => navigate('/accounts')} variant="outline" className="w-full sm:w-auto h-14 sm:h-12 px-6 rounded-xl sm:rounded-lg border-[#27272a] bg-transparent text-white hover:bg-[#1a1a20] hover:text-[#cca858] text-base sm:text-sm">
-                  View Portfolio
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto mt-4 lg:mt-0">
+                  <Button
+                    onClick={() => navigate('/transfers')}
+                    className="w-full sm:w-auto bg-[#cca858] hover:bg-[#b5954a] text-[#121217] h-14 sm:h-12 px-6 text-base sm:text-sm font-semibold rounded-xl sm:rounded-lg shadow-lg shadow-[#cca858]/20"
+                  >
+                    <ArrowUpRight className="h-5 w-5 sm:h-4 sm:w-4 mr-2" /> Make a Transfer
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/accounts')}
+                    variant="outline"
+                    className="w-full sm:w-auto h-14 sm:h-12 px-6 rounded-xl sm:rounded-lg border-[#27272a] bg-transparent text-white hover:bg-[#1a1a20] hover:text-[#cca858] text-base sm:text-sm"
+                  >
+                    View Portfolio
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* Dashboard Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
           {/* Main Chart */}
           <Card className="lg:col-span-2 bg-[#121217] border-[#27272a]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -169,38 +268,46 @@ export default function Dashboard({ user, onLogout }) {
               <div className="h-[300px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   {(() => {
-                    const chartData = balanceData.length > 1 ? balanceData : [
-                      {name: 'Jan 1', balance: 12000000}, 
-                      {name: 'Feb 1', balance: 12200000}, 
-                      {name: 'Mar 1', balance: 12500450}
-                    ];
+                    const chartData =
+                      balanceData.length > 1
+                        ? balanceData
+                        : [
+                            { name: 'Jan 1', balance: 12000000 },
+                            { name: 'Feb 1', balance: 12200000 },
+                            { name: 'Mar 1', balance: 12500450 },
+                          ];
                     return (
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
-                        <XAxis 
-                          dataKey="name" 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{fill: '#71717a', fontSize: 12}} 
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fill: '#71717a', fontSize: 12 }}
                           dy={10}
                         />
-                        <YAxis 
+                        <YAxis
                           domain={['auto', 'auto']}
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{fill: '#71717a', fontSize: 12}}
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fill: '#71717a', fontSize: 12 }}
                           tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
                           dx={-10}
                         />
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: '#121217', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#121217',
+                            borderColor: '#27272a',
+                            borderRadius: '8px',
+                            color: '#fff',
+                          }}
                           itemStyle={{ color: '#cca858' }}
-                          formatter={(value) => [formatCurrency(value), 'Balance']}
+                          formatter={(value) => [formatCurrency(Number(value)), 'Balance']}
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="balance" 
-                          stroke="#cca858" 
+                        <Line
+                          type="monotone"
+                          dataKey="balance"
+                          stroke="#cca858"
                           strokeWidth={3}
                           dot={{ fill: '#121217', stroke: '#cca858', strokeWidth: 2, r: 4 }}
                           activeDot={{ r: 6, fill: '#cca858' }}
@@ -223,22 +330,37 @@ export default function Dashboard({ user, onLogout }) {
             <CardContent className="flex-1 flex flex-col">
               <div className="flex items-center gap-4 mb-6">
                 <div className="h-16 w-16 rounded-full border-2 border-[#27272a] overflow-hidden">
-                  <img src="https://i.pravatar.cc/150?img=32" alt="Advisor" className="w-full h-full object-cover" />
+                  <img
+                    src="https://i.pravatar.cc/150?img=32"
+                    alt="Advisor"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
                   <h3 className="text-white font-medium">Eleanor Sterling</h3>
                   <p className="text-sm text-[#cca858]">Senior Wealth Director</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4 mb-6 flex-1">
                 <div className="bg-[#1a1a20] rounded-lg p-4 border border-[#27272a]">
-                  <p className="text-sm text-gray-300">"Your quarterly portfolio review is ready. The emerging markets fund has exceeded our expectations by 4.2%."</p>
+                  <p className="text-sm text-gray-300">
+                    "Your quarterly portfolio review is ready. The emerging markets fund has
+                    exceeded our expectations by 4.2%."
+                  </p>
                   <p className="text-xs text-gray-500 mt-2">2 hours ago</p>
                 </div>
               </div>
-              
-              <Button onClick={() => window.open('mailto:advisor@goldlinkbank.com?subject=Consultation%20Request', '_blank')} className="w-full bg-[#1a1a20] hover:bg-[#27272a] text-white border border-[#27272a]">
+
+              <Button
+                onClick={() =>
+                  window.open(
+                    'mailto:advisor@goldlinkbank.com?subject=Consultation%20Request',
+                    '_blank'
+                  )
+                }
+                className="w-full bg-[#1a1a20] hover:bg-[#27272a] text-white border border-[#27272a]"
+              >
                 Schedule Consultation
               </Button>
             </CardContent>
@@ -247,33 +369,38 @@ export default function Dashboard({ user, onLogout }) {
 
         {/* Recent Transactions & Accounts Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
           {/* Accounts */}
           <Card className="bg-[#121217] border-[#27272a]">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-medium text-white">Your Accounts</CardTitle>
-              <Button variant="ghost" className="text-[#cca858] hover:text-[#e6cc80] hover:bg-[#cca858]/10 text-sm">
+              <Button
+                variant="ghost"
+                className="text-[#cca858] hover:text-[#e6cc80] hover:bg-[#cca858]/10 text-sm"
+              >
                 View All <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {(userAccounts.length ? userAccounts : [
-                {id: 1, name: 'Private Checking', number: '•••• 4829', balance: 1250000.50},
-                {id: 2, name: 'Global Investment', number: '•••• 9931', balance: 8400000.00},
-                {id: 3, name: 'Offshore Trust', number: '•••• 1120', balance: 2850449.50}
-              ]).map((account) => (
-                <div key={account.id} className="flex items-center justify-between p-4 sm:p-5 rounded-xl bg-[#0a0a0c] border border-[#27272a] hover:border-[#cca858]/50 transition-colors cursor-pointer active:bg-[#1a1a20]">
+              {displayAccounts.map((account) => (
+                <div
+                  key={account.id}
+                  className="flex items-center justify-between p-4 sm:p-5 rounded-xl bg-[#0a0a0c] border border-[#27272a] hover:border-[#cca858]/50 transition-colors cursor-pointer active:bg-[#1a1a20]"
+                >
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     <div className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full bg-[#1a1a20] flex items-center justify-center">
                       <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-[#cca858]" />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-white font-medium text-sm sm:text-base truncate">{account.name}</h4>
+                      <h4 className="text-white font-medium text-sm sm:text-base truncate">
+                        {account.name}
+                      </h4>
                       <p className="text-xs sm:text-sm text-gray-500">{account.number}</p>
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-4">
-                    <p className="text-white font-medium text-sm sm:text-base">{balanceVisible ? formatCurrency(account.balance) : '••••••••'}</p>
+                    <p className="text-white font-medium text-sm sm:text-base">
+                      {balanceVisible ? formatCurrency(account.balance) : '••••••••'}
+                    </p>
                     <p className="text-xs sm:text-sm text-emerald-400">Available</p>
                   </div>
                 </div>
@@ -285,37 +412,50 @@ export default function Dashboard({ user, onLogout }) {
           <Card className="bg-[#121217] border-[#27272a]">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-medium text-white">Recent Activity</CardTitle>
-              <Button variant="ghost" className="text-[#cca858] hover:text-[#e6cc80] hover:bg-[#cca858]/10 text-sm">
+              <Button
+                variant="ghost"
+                className="text-[#cca858] hover:text-[#e6cc80] hover:bg-[#cca858]/10 text-sm"
+              >
                 View All <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {(recentTransactions.length ? recentTransactions.slice(0, 4) : [
-                {id: 1, description: 'Sotheby\'s Auction House', amount: -450000, date: '2026-05-02T14:30:00'},
-                {id: 2, description: 'Dividend - Vanguard S&P 500', amount: 125400.50, date: '2026-05-01T09:15:00'},
-                {id: 3, description: 'Private Jet Charter Services', amount: -28500, date: '2026-04-28T16:45:00'},
-                {id: 4, description: 'Patek Philippe SA', amount: -185000, date: '2026-04-25T11:20:00'}
-              ]).map((txn) => (
-                <div key={txn.id} className="flex items-center justify-between py-4 border-b border-[#27272a] last:border-0 hover:bg-[#1a1a20]/50 px-2 -mx-2 rounded-lg transition-colors cursor-pointer">
+              {displayTransactions.map((txn) => (
+                <div
+                  key={txn.id}
+                  className="flex items-center justify-between py-4 border-b border-[#27272a] last:border-0 hover:bg-[#1a1a20]/50 px-2 -mx-2 rounded-lg transition-colors cursor-pointer"
+                >
                   <div className="flex items-center gap-3 md:gap-4">
-                    <div className={`h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full flex items-center justify-center ${txn.amount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                      {txn.amount > 0 ? <ArrowDownRight className="h-5 w-5 sm:h-6 sm:w-6" /> : <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" />}
+                    <div
+                      className={`h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full flex items-center justify-center ${txn.amount > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
+                    >
+                      {txn.amount > 0 ? (
+                        <ArrowDownRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                      ) : (
+                        <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                      )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-white font-medium text-sm sm:text-base truncate max-w-[150px] sm:max-w-[250px]">{txn.description}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">{new Date(txn.date).toLocaleDateString()}</p>
+                      <p className="text-white font-medium text-sm sm:text-base truncate max-w-[150px] sm:max-w-[250px]">
+                        {txn.description}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-500">
+                        {new Date(txn.date).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className={`font-medium text-sm sm:text-base ${txn.amount > 0 ? 'text-emerald-400' : 'text-white'}`}>
-                      {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
+                    <p
+                      className={`font-medium text-sm sm:text-base ${txn.amount > 0 ? 'text-emerald-400' : 'text-white'}`}
+                    >
+                      {txn.amount > 0 ? '+' : ''}
+                      {formatCurrency(txn.amount)}
                     </p>
                   </div>
                 </div>
               ))}
             </CardContent>
           </Card>
-
         </motion.div>
       </motion.div>
     </Layout>

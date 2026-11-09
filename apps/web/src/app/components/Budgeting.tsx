@@ -1,9 +1,13 @@
 import Layout from './Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import { Button } from './ui/button';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { Settings as SettingsIcon } from 'lucide-react';
 import budgetsData from '../../../../../db/budgets.json';
+import type { Budget, User } from '@goldlink/core';
 
 type ChartDatum = {
   name: string;
@@ -13,14 +17,29 @@ type ChartDatum = {
 };
 
 // Fallback palette matching the original aesthetic when a category record omits its color
-const fallbackColors = ['#cca858', '#4b5563', '#1e1e24', '#71717a', '#a1a1aa', '#d97706', '#06b6d4'];
+const fallbackColors = [
+  '#cca858',
+  '#4b5563',
+  '#1e1e24',
+  '#71717a',
+  '#a1a1aa',
+  '#d97706',
+  '#06b6d4',
+];
 
-export default function Budgeting({ user, onLogout }) {
+type BudgetingProps = {
+  user: User;
+  onLogout: () => void;
+};
+
+export default function Budgeting({ user, onLogout }: BudgetingProps) {
+  const navigate = useNavigate();
   const [data, setData] = useState<ChartDatum[]>([]);
   const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
+  const [hasBudget, setHasBudget] = useState<boolean>(true);
 
   useEffect(() => {
-    const userBudget = budgetsData.budgets.find(b => b.userId === user.id);
+    const userBudget = (budgetsData.budgets as Budget[]).find((b) => b.userId === user.id);
     if (userBudget) {
       // Adapter: recharts <Pie> consumes {name, value}; we keep `budget` and `color`
       // alongside so the right-hand Target Allocation card can render bars without
@@ -33,10 +52,11 @@ export default function Budgeting({ user, onLogout }) {
       }));
       setData(adapted);
       setMonthlyBudget(userBudget.monthlyBudget);
+      setHasBudget(true);
     } else {
-      // TODO: backfill a `budgets` entry for new users in db/budgets.json
       setData([]);
       setMonthlyBudget(0);
+      setHasBudget(false);
     }
   }, [user]);
 
@@ -48,24 +68,25 @@ export default function Budgeting({ user, onLogout }) {
     }).format(value);
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+      transition: { staggerChildren: 0.1 },
+    },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
   };
 
-  const totalForPct = monthlyBudget || data.reduce((s, d) => s + (d.budget || d.value || 0), 0) || 1;
+  const totalForPct =
+    monthlyBudget || data.reduce((s, d) => s + (d.budget || d.value || 0), 0) || 1;
 
   return (
     <Layout user={user} onLogout={onLogout}>
-      <motion.div 
+      <motion.div
         className="space-y-8"
         variants={containerVariants}
         initial="hidden"
@@ -76,78 +97,120 @@ export default function Budgeting({ user, onLogout }) {
           <p className="text-gray-400">Macro overview of your global portfolio.</p>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <Card className="bg-[#121217] border-[#27272a] h-[500px]">
-              <CardHeader>
-                <CardTitle className="text-xl font-medium text-white">Asset Distribution</CardTitle>
-                <CardDescription className="text-gray-400">Current allocation across all connected accounts.</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={data}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={100}
-                      outerRadius={140}
-                      paddingAngle={2}
-                      dataKey="value"
-                      nameKey="name"
-                      stroke="none"
-                    >
-                      {data.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color || fallbackColors[index % fallbackColors.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => formatCurrency(value)}
-                      contentStyle={{ backgroundColor: '#121217', borderColor: '#27272a', color: '#fff' }}
-                      itemStyle={{ color: '#cca858' }}
-                    />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      height={36} 
-                      iconType="circle"
-                      wrapperStyle={{ paddingTop: '20px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
+        {!hasBudget ? (
+          <motion.div variants={itemVariants}>
             <Card className="bg-[#121217] border-[#27272a]">
-              <CardHeader>
-                <CardTitle className="text-lg font-medium text-white">Target Allocation</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {data.length === 0 && (
-                  <p className="text-sm text-gray-500">No budget categories configured.</p>
-                )}
-                {data.map((item, index) => {
-                  const pct = (item.value / totalForPct) * 100;
-                  return (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white">{item.name}</span>
-                        <span className="text-gray-400">{pct.toFixed(1)}%</span>
-                      </div>
-                      <div className="w-full bg-[#0a0a0c] rounded-full h-2">
-                        <div 
-                          className="h-2 rounded-full" 
-                          style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: item.color || fallbackColors[index % fallbackColors.length] }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <CardContent className="p-12 text-center space-y-4">
+                <div className="mx-auto h-14 w-14 rounded-full bg-[#cca858]/10 flex items-center justify-center">
+                  <SettingsIcon className="h-6 w-6 text-[#cca858]" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl font-medium text-white">No budget configured yet</h2>
+                  <p className="text-gray-400 max-w-md mx-auto">
+                    You haven't set up a wealth allocation budget. Configure one in Settings to
+                    start tracking category spend and savings goals.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => navigate('/settings')}
+                  className="bg-[#cca858] hover:bg-[#b5954a] text-[#121217]"
+                >
+                  Set one up in Settings
+                </Button>
               </CardContent>
             </Card>
-          </div>
-        </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Card className="bg-[#121217] border-[#27272a] h-[500px]">
+                <CardHeader>
+                  <CardTitle className="text-xl font-medium text-white">
+                    Asset Distribution
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Current allocation across all connected accounts.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={100}
+                        outerRadius={140}
+                        paddingAngle={2}
+                        dataKey="value"
+                        nameKey="name"
+                        stroke="none"
+                      >
+                        {data.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={entry.color || fallbackColors[index % fallbackColors.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number) => formatCurrency(value)}
+                        contentStyle={{
+                          backgroundColor: '#121217',
+                          borderColor: '#27272a',
+                          color: '#fff',
+                        }}
+                        itemStyle={{ color: '#cca858' }}
+                      />
+                      <Legend
+                        verticalAlign="bottom"
+                        height={36}
+                        iconType="circle"
+                        wrapperStyle={{ paddingTop: '20px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card className="bg-[#121217] border-[#27272a]">
+                <CardHeader>
+                  <CardTitle className="text-lg font-medium text-white">
+                    Target Allocation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {data.length === 0 && (
+                    <p className="text-sm text-gray-500">No budget categories configured.</p>
+                  )}
+                  {data.map((item, index) => {
+                    const pct = (item.value / totalForPct) * 100;
+                    return (
+                      <div key={index} className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white">{item.name}</span>
+                          <span className="text-gray-400">{pct.toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-[#0a0a0c] rounded-full h-2">
+                          <div
+                            className="h-2 rounded-full"
+                            style={{
+                              width: `${Math.min(pct, 100)}%`,
+                              backgroundColor:
+                                item.color || fallbackColors[index % fallbackColors.length],
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </Layout>
   );

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { AnimatePresence } from 'motion/react';
+import type { User } from '@goldlink/core';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Accounts from './components/Accounts';
@@ -16,20 +17,19 @@ import { Toaster } from './components/ui/sonner';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isBooting, setIsBooting] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
     const session = localStorage.getItem('bankingSession');
     if (session) {
-      const parsed = JSON.parse(session);
+      const parsed = JSON.parse(session) as { user: User };
       setIsAuthenticated(true);
       setUser(parsed.user);
     }
   }, []);
 
-  const handleLogin = (userData) => {
+  const handleLogin = (userData: User) => {
     setIsAuthenticated(true);
     setUser(userData);
     localStorage.setItem('bankingSession', JSON.stringify({ user: userData }));
@@ -51,109 +51,109 @@ export default function App() {
         <BrowserRouter>
           <Toaster />
           <Routes>
-        <Route
-          path="/login"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <LoginPage onLogin={handleLogin} />
-            )
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            isAuthenticated ? (
-              <Dashboard user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/accounts"
-          element={
-            isAuthenticated ? (
-              <Accounts user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/accounts/:accountId"
-          element={
-            isAuthenticated ? (
-              <AccountDetail user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/transfers"
-          element={
-            isAuthenticated ? (
-              <Transfers user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/billpay"
-          element={
-            isAuthenticated ? (
-              <BillPay user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/deposit"
-          element={
-            isAuthenticated ? (
-              <MobileDeposit user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/cards"
-          element={
-            isAuthenticated ? (
-              <Cards user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/budgeting"
-          element={
-            isAuthenticated ? (
-              <Budgeting user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            isAuthenticated ? (
-              <Settings user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+            <Route
+              path="/login"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <LoginPage onLogin={handleLogin} />
+                )
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                isAuthenticated && user ? (
+                  <Dashboard user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/accounts"
+              element={
+                isAuthenticated && user ? (
+                  <Accounts user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/accounts/:accountId"
+              element={
+                isAuthenticated && user ? (
+                  <AccountDetail user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/transfers"
+              element={
+                isAuthenticated && user ? (
+                  <Transfers user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/billpay"
+              element={
+                isAuthenticated && user ? (
+                  <BillPay user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/deposit"
+              element={
+                isAuthenticated && user ? (
+                  <MobileDeposit user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/cards"
+              element={
+                isAuthenticated && user ? (
+                  <Cards user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/budgeting"
+              element={
+                isAuthenticated && user ? (
+                  <Budgeting user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                isAuthenticated && user ? (
+                  <Settings user={user} onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </BrowserRouter>
       )}
     </>
   );
