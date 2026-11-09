@@ -1,4 +1,4 @@
-# 🏦 GoldLink Bank
+﻿# 🏦 GoldLink Bank
 
 ![GoldLink Bank](https://images.unsplash.com/photo-1634733988138-bf2c3a2a13fa?q=80&w=2070&auto=format&fit=crop)
 
@@ -7,7 +7,7 @@
 | | |
 | --- | --- |
 | **Status** | Local demo / portfolio prototype — not a production bank |
-| **Live URL** | N/A (no public deployment yet; run locally via Vite / Expo) |
+| **Live URL** | https://goldlink-bank.vercel.app (web demo) |
 | **Package manager** | **pnpm** (workspace + `packageManager` field + `pnpm-lock.yaml`) |
 
 ---
@@ -231,3 +231,4 @@ _Exceptional Banking for Exceptional People_
 © 2026 GoldLink Bank
 
 </div>
+
